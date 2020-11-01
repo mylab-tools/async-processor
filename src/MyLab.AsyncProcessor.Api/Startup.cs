@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyLab.HttpMetrics;
+using MyLab.StatusProvider;
 using Prometheus;
 
 namespace MyLab.AsyncProcessor.Api
@@ -28,6 +29,7 @@ namespace MyLab.AsyncProcessor.Api
         {
             services.AddControllers();
             services.AddUrlBasedHttpMetrics();
+            services.AddAppStatusProviding();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
