@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using MyLab.RemoteConfig;
 
 namespace MyLab.AsyncProcessor.Api
 {
@@ -18,6 +18,8 @@ namespace MyLab.AsyncProcessor.Api
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .LoadRemoteConfigConnectionFromEnvironmentVars()
+                .AddRemoteConfiguration(optional:true)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
