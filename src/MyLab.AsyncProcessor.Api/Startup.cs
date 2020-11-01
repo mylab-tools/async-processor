@@ -36,6 +36,10 @@ namespace MyLab.AsyncProcessor.Api
 
             services.AddUrlBasedHttpMetrics();
             services.AddAppStatusProviding();
+            
+            //Add publishing
+
+            //Add deadleter consumers
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
