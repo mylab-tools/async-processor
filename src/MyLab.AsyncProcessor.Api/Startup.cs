@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MyLab.HttpMetrics;
+using Prometheus;
 
 namespace MyLab.AsyncProcessor.Api
 {
@@ -25,6 +27,7 @@ namespace MyLab.AsyncProcessor.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddUrlBasedHttpMetrics();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,11 +40,13 @@ namespace MyLab.AsyncProcessor.Api
 
             app.UseRouting();
 
-            app.UseAuthorization();
-
+            app.UseHttpMetrics();           
+            app.UseUrlBasedHttpMetrics();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapMetrics();
             });
         }
     }
