@@ -10,8 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="MyLab.HttpMetrics" Version="1.0.2" />
+    <PackageReference Include="MyLab.LogDsl" Version="2.2.0" />
     <PackageReference Include="MyLab.RemoteConfig" Version="1.3.2" />
     <PackageReference Include="MyLab.StatusProvider" Version="1.3.5" />
+    <PackageReference Include="MyLab.Syslog" Version="1.3.6" />
+    <PackageReference Include="MyLab.WebErrors" Version="1.0.3" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="4.0.0" />
   </ItemGroup>
 

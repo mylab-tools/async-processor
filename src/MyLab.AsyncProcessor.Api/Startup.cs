@@ -11,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyLab.HttpMetrics;
 using MyLab.StatusProvider;
+using MyLab.Syslog;
+using MyLab.WebErrors;
 using Prometheus;
 
 namespace MyLab.AsyncProcessor.Api
@@ -27,7 +29,11 @@ namespace MyLab.AsyncProcessor.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers(o=> o.AddExceptionProcessing());
+
+            services.AddLogging(c => c.AddSyslog());
+            services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
+
             services.AddUrlBasedHttpMetrics();
             services.AddAppStatusProviding();
         }
