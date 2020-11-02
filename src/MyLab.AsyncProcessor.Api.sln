@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30406.217
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLab.AsyncProcessor.Api", "MyLab.AsyncProcessor.Api\MyLab.AsyncProcessor.Api.csproj", "{39CAEBDF-6979-45F4-A374-62917A76589F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.AsyncProcessor.Api", "MyLab.AsyncProcessor.Api\MyLab.AsyncProcessor.Api.csproj", "{39CAEBDF-6979-45F4-A374-62917A76589F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F1433CEE-341D-40DD-AC00-62886708E771}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{39CAEBDF-6979-45F4-A374-62917A76589F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39CAEBDF-6979-45F4-A374-62917A76589F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39CAEBDF-6979-45F4-A374-62917A76589F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1433CEE-341D-40DD-AC00-62886708E771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1433CEE-341D-40DD-AC00-62886708E771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1433CEE-341D-40DD-AC00-62886708E771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1433CEE-341D-40DD-AC00-62886708E771}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
