@@ -14,3 +14,4 @@ Log
 TestResults
 *.nupkg
 *.bak
+.vs
