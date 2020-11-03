@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Mq;
 using Newtonsoft.Json;
@@ -24,7 +25,18 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
 
             var procOperator = new ProcessingOperator(message.Payload.Id, _api);
 
-            await _logic.Process(request, procOperator);
+            try
+            {
+                await _logic.ProcessAsync(request, procOperator);
+            }
+            catch (Exception e)
+            {
+                await _api.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
+                {
+                    TechMessage = e.Message,
+                    TechInfo = e.ToString()
+                });
+            }
         }
     }
 }

@@ -2,8 +2,15 @@
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
 {
-    interface IAsyncProcessingLogic<T>
+    /// <summary>
+    /// Performs request processing
+    /// </summary>
+    /// <typeparam name="T">Request type</typeparam>
+    public interface IAsyncProcessingLogic<in T>
     {
-        Task Process(T request, IProcessingOperator op);
+        /// <summary>
+        /// Processes request
+        /// </summary>
+        Task ProcessAsync(T request, IProcessingOperator op);
     }
 }
