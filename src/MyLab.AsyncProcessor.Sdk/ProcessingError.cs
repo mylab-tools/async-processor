@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MyLab.AsyncProcessor.Api.DataModel
+namespace MyLab.AsyncProcessor.Sdk
 {
     public class ProcessingError
     {

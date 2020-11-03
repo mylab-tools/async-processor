@@ -104,6 +104,8 @@ paths:
           description: Request result was successfully updated
         404:  
           $ref: '#/components/responses/RequestNotFound'
+        415:
+          description: Unsupported Media Type 
 components:
   parameters:
     RequestId:
@@ -125,13 +127,13 @@ components:
           type: string
           description: Defines queue routing
           example: big
-        data: 
+        content: 
           type: object
           additionalProperties: true
           description: request content
           example: { "value": "123", "dt": "10.10.2010"  }
       required:
-      - data
+      - content
     RequestStatus:
       type: object
       properties:
@@ -145,6 +147,13 @@ components:
           description: Indicates that processing was successful
         error:
           $ref: '#/components/schemas/ProcessingError'
+        resultSize:
+          type: integar
+          format: int64
+          description: Result content size
+        resultMime:
+          type: string
+          description: Result mime type
       required:
       - processStep
     ProcessStep:

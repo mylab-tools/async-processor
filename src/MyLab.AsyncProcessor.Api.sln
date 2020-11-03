@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.AsyncProcessor.Api", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F1433CEE-341D-40DD-AC00-62886708E771}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{71C6F0BF-2465-44FE-9499-7BC84F89318D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLab.AsyncProcessor.Sdk", "MyLab.AsyncProcessor.Sdk\MyLab.AsyncProcessor.Sdk.csproj", "{663F3931-A07B-415A-A2A8-7B66D816D660}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{F1433CEE-341D-40DD-AC00-62886708E771}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1433CEE-341D-40DD-AC00-62886708E771}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1433CEE-341D-40DD-AC00-62886708E771}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71C6F0BF-2465-44FE-9499-7BC84F89318D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71C6F0BF-2465-44FE-9499-7BC84F89318D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71C6F0BF-2465-44FE-9499-7BC84F89318D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71C6F0BF-2465-44FE-9499-7BC84F89318D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{663F3931-A07B-415A-A2A8-7B66D816D660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{663F3931-A07B-415A-A2A8-7B66D816D660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{663F3931-A07B-415A-A2A8-7B66D816D660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{663F3931-A07B-415A-A2A8-7B66D816D660}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

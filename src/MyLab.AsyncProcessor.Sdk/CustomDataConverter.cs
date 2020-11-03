@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MyLab.AsyncProcessor.Api.Tools
+namespace MyLab.AsyncProcessor.Sdk
 {
     class CustomDataConverter : JsonConverter
     {

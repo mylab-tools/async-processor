@@ -1,0 +1,8 @@
+version: '3.2'
+
+services:
+  redis:
+    container_name: redis
+    image: redis:6
+    ports: 
+    - 9111:6379

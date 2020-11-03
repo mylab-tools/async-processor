@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using MyLab.HttpMetrics;
+using MyLab.Redis;
 using MyLab.StatusProvider;
 using MyLab.Syslog;
 using MyLab.WebErrors;
@@ -32,14 +27,19 @@ namespace MyLab.AsyncProcessor.Api
             services.AddControllers(o=> o.AddExceptionProcessing());
 
             services.AddLogging(c => c.AddSyslog());
-            services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
 
             services.AddUrlBasedHttpMetrics();
             services.AddAppStatusProviding();
-            
+
+            services.AddRedisService(Configuration);
+
+
             //Add publishing
 
             //Add deadleter consumers
+
+            services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
+            services.Configure<AsyncProcessorOptions>(Configuration.GetSection("AsyncProc"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MyLab.AsyncProcessor.Api.DataModel
+namespace MyLab.AsyncProcessor.Sdk
 {
     public class RequestStatus
     {
@@ -12,5 +12,9 @@ namespace MyLab.AsyncProcessor.Api.DataModel
         public bool Successful { get; set; }
         [JsonProperty("error")]
         public ProcessingError Error { get; set; }
+        [JsonProperty("resultSize")]
+        public long ResponseSize{ get; set; }
+        [JsonProperty("resultMime")]
+        public string ResponseMimeType { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using MyLab.AsyncProcessor.Api.DataModel;
+using MyLab.AsyncProcessor.Sdk;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,7 +26,7 @@ namespace UnitTests
 
             //Assert
             Assert.NotNull(obj);
-            Assert.Equal(dataJson, obj.Data);
+            Assert.Equal(dataJson, obj.Content);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace UnitTests
             var dataJson = "{\"property\":\"value\"}";
             var obj = new CreateRequest
             {
-                Data = dataJson
+                Content = dataJson
             };
 
             //Act

@@ -1,7 +1,8 @@
-﻿namespace MyLab.AsyncProcessor.Api.DataModel
+﻿namespace MyLab.AsyncProcessor.Sdk
 {
     public enum ProcessStep
     {
+        Undefined,
         Pending,
         Processing,
         Completed
