@@ -1,9 +1,12 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MyLab.AsyncProcessor.Sdk;
 using MyLab.HttpMetrics;
+using MyLab.Mq;
 using MyLab.Redis;
 using MyLab.StatusProvider;
 using MyLab.Syslog;
@@ -30,16 +33,29 @@ namespace MyLab.AsyncProcessor.Api
 
             services.AddUrlBasedHttpMetrics();
             services.AddAppStatusProviding();
-
             services.AddRedisService(Configuration);
-
-
-            //Add publishing
-
-            //Add deadleter consumers
-
+            services.AddMqPublisher();
+            
             services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
-            services.Configure<AsyncProcessorOptions>(Configuration.GetSection("AsyncProc"));
+
+            var asyncProcConfig = Configuration.GetSection("AsyncProc");
+
+            InitDeadLetterConsumer(services, asyncProcConfig);
+            services.Configure<AsyncProcessorOptions>(asyncProcConfig);
+
+
+        }
+
+        private void InitDeadLetterConsumer(IServiceCollection services, IConfigurationSection asyncProcConfig)
+        {
+            var options = asyncProcConfig.Get<AsyncProcessorOptions>();
+            if (!string.IsNullOrEmpty(options.DeadLetter))
+            {
+                services.AddMqConsuming(registrar =>
+                {
+                    registrar.RegisterConsumer(new MqConsumer<QueueRequestMessage, DeadLetterConsumer>(options.DeadLetter));
+                });
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

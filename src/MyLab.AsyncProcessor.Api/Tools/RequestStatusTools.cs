@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using MyLab.AsyncProcessor.Sdk;
@@ -72,10 +74,11 @@ namespace MyLab.AsyncProcessor.Api.Tools
             return await hash.GetAsync("responseMime");
         }
 
-        public static async Task SaveResultInfo(long length, string mimeType, HashRedisKey hash)
+        public static async Task SaveResult(long length, string mimeType, HashRedisKey hash)
         {
             var props = new[]
             {
+                new HashEntry("processStep", ProcessStep.Completed.ToString()),
                 new HashEntry("resultSize", length),
                 new HashEntry("resultMime", mimeType)
             };
@@ -88,6 +91,17 @@ namespace MyLab.AsyncProcessor.Api.Tools
             var props = new[]
             {
                 new HashEntry("bizStep", bizStep)
+            };
+
+            await hash.SetAsync(props);
+        }
+
+        public static async Task SaveError(ProcessingError error, HashRedisKey hash)
+        {
+            var props = new[]
+            {
+                new HashEntry("processStep", ProcessStep.Completed.ToString()),
+                new HashEntry("error", JsonConvert.SerializeObject(error))
             };
 
             await hash.SetAsync(props);

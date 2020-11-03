@@ -53,7 +53,7 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [HttpPut("{id}/status/error")]
         public async Task<IActionResult> SetError([FromRoute] string id, [FromBody] ProcessingError error)
         {
-            await _logic.GetStatusAsync(id);
+            await _logic.SetErrorAsync(id, error);
 
             return Ok();
         }

@@ -84,6 +84,14 @@ namespace MyLab.AsyncProcessor.Api.Services
             await key.ExpireAsync(_options.MaxIdleTime);
         }
 
+        public async Task SetErrorAsync(string id, ProcessingError error)
+        {
+            var key = await GetStatusKey(id);
+
+            await RequestStatusTools.SaveError(error, key);
+            await key.ExpireAsync(_options.MaxStoreTime);
+        }
+
         public async Task<RequestResult> GetResultAsync(string id)
         {
             var statusKey = await GetStatusKey(id);
@@ -99,11 +107,10 @@ namespace MyLab.AsyncProcessor.Api.Services
         {
             var statusKey = await GetStatusKey(id);
 
-            await RequestStatusTools.SaveResultInfo(content.Length, mimeType, statusKey);
+            await RequestStatusTools.SaveResult(content.Length, mimeType, statusKey);
 
             var resultKey = GetResultKey(id);
             var strContent = ContentToString(content, mimeType);
-
             await resultKey.SetAsync(strContent);
 
             await statusKey.ExpireAsync(_options.MaxStoreTime);
