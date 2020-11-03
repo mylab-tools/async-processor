@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.AsyncProcessor.Api.Tools;
 using MyLab.AsyncProcessor.Sdk;
+using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Mq;
 using MyLab.Redis;
 using MyLab.Redis.ObjectModel;
@@ -84,12 +85,20 @@ namespace MyLab.AsyncProcessor.Api.Services
             await key.ExpireAsync(_options.MaxIdleTime);
         }
 
-        public async Task SetErrorAsync(string id, ProcessingError error)
+        public async Task CompleteWithErrorAsync(string id, ProcessingError error)
         {
             var key = await GetStatusKey(id);
 
             await RequestStatusTools.SaveError(error, key);
             await key.ExpireAsync(_options.MaxStoreTime);
+        }
+
+        public async Task SetRequestStep(string id, ProcessStep processStep)
+        {
+            var key = await GetStatusKey(id);
+
+            await RequestStatusTools.SetStep(processStep, key);
+            await key.ExpireAsync(_options.MaxIdleTime);
         }
 
         public async Task<RequestResult> GetResultAsync(string id)
@@ -103,7 +112,7 @@ namespace MyLab.AsyncProcessor.Api.Services
             return new RequestResult(resultMime, resultContent);
         }
 
-        public async Task SetResultAsync(string id, byte[] content, string mimeType)
+        public async Task CompleteWithResultAsync(string id, byte[] content, string mimeType)
         {
             var statusKey = await GetStatusKey(id);
 
@@ -127,7 +136,6 @@ namespace MyLab.AsyncProcessor.Api.Services
                 {
                     return Convert.ToBase64String(content);
                 }
-                case "text/plain":
                 case "application/json":
                 {
                     return Encoding.UTF8.GetString(content);

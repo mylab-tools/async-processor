@@ -24,10 +24,6 @@ namespace MyLab.AsyncProcessor.Api.Tools
                     var byteContent = Convert.FromBase64String(_value);
                     return new ByteArrayContent(byteContent);
                 }
-                case "text/plain":
-                {
-                    return new StringContent(_value);
-                }
                 case "application/json":
                 {
                     return new StringContent(_value, Encoding.UTF8, "application/json");

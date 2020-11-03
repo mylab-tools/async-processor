@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using MyLab.AsyncProcessor.Sdk;
+using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Redis.ObjectModel;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -102,6 +103,16 @@ namespace MyLab.AsyncProcessor.Api.Tools
             {
                 new HashEntry("processStep", ProcessStep.Completed.ToString()),
                 new HashEntry("error", JsonConvert.SerializeObject(error))
+            };
+
+            await hash.SetAsync(props);
+        }
+
+        public static async Task SetStep(ProcessStep step, HashRedisKey hash)
+        {
+            var props = new[]
+            {
+                new HashEntry("processStep", step.ToString())
             };
 
             await hash.SetAsync(props);

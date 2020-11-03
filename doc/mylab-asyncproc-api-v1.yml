@@ -49,6 +49,21 @@ paths:
           description: Business step was set successfully
         404:  
           $ref: '#/components/responses/RequestNotFound'
+  '/requests/{id}/status/step/processing':
+    post:
+      description: Sets 'Processing' as value of processing step 
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        200:
+          description: Step was set successfully
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
   '/requests/{id}/status/error':
     put:
       description: Sets request processing error
@@ -75,9 +90,6 @@ paths:
           content:
             application/json:
               schema: {}
-            text/plain:
-              schema:
-                type: string
             application/octet-stream:
               schema:
                 type: string
@@ -92,9 +104,6 @@ paths:
         content:
           application/json:
             schema: {}
-          text/plain:
-            schema:
-              type: string
           application/octet-stream:
             schema:
               type: string

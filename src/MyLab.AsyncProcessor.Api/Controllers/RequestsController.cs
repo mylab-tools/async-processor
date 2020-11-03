@@ -3,7 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MyLab.AsyncProcessor.Api.Services;
-using MyLab.AsyncProcessor.Sdk;
+using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.WebErrors;
 
 namespace MyLab.AsyncProcessor.Api.Controllers
@@ -51,9 +51,27 @@ namespace MyLab.AsyncProcessor.Api.Controllers
 
         [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]
         [HttpPut("{id}/status/error")]
-        public async Task<IActionResult> SetError([FromRoute] string id, [FromBody] ProcessingError error)
+        public async Task<IActionResult> CompleteWithError([FromRoute] string id, [FromBody] ProcessingError error)
         {
-            await _logic.SetErrorAsync(id, error);
+            await _logic.CompleteWithErrorAsync(id, error);
+
+            return Ok();
+        }
+
+        [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]
+        [HttpPost("{id}/status/step/processing")]
+        public async Task<IActionResult> MakeRequestProcessing([FromRoute] string id)
+        {
+            await _logic.SetRequestStep(id, ProcessStep.Processing);
+
+            return Ok();
+        }
+
+        [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]
+        [HttpPost("{id}/status/step/completed")]
+        public async Task<IActionResult> MakeRequestCompeted([FromRoute] string id)
+        {
+            await _logic.SetRequestStep(id, ProcessStep.Completed);
 
             return Ok();
         }
@@ -61,20 +79,20 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(UnsupportedMediaTypeException), HttpStatusCode.UnsupportedMediaType)]
         [HttpPut("{id}/result")]
-        [Consumes("application/json", "text/plain", "application/octet-stream")]
-        public async Task<IActionResult> SetResultJson([FromRoute] string id)
+        [Consumes("application/json", "application/octet-stream")]
+        public async Task<IActionResult> CompleteWithResult([FromRoute] string id)
         {
             var content = await Request.BodyReader.ReadAsync();
             var mimeType = Request.ContentType;
 
-            await _logic.SetResultAsync(id, content.Buffer.ToArray(), mimeType);
+            await _logic.CompleteWithResultAsync(id, content.Buffer.ToArray(), mimeType);
 
             return Ok();
         }
 
         [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]
         [HttpGet("{id}/result")]
-        [Produces("application/octet-stream", "text/plain", "application/json")]
+        [Produces("application/octet-stream", "application/json")]
         public async Task<IActionResult> GetResult([FromRoute] string id)
         {
             var res = await _logic.GetResultAsync(id);

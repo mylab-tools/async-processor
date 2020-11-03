@@ -1,4 +1,4 @@
-﻿namespace MyLab.AsyncProcessor.Sdk
+﻿namespace MyLab.AsyncProcessor.Sdk.DataModel
 {
     public enum ProcessStep
     {

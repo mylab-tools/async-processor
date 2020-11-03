@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyLab.AsyncProcessor.Sdk;
+using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.HttpMetrics;
 using MyLab.Mq;
 using MyLab.Redis;

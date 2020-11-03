@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "Integra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLab.AsyncProcessor.Sdk", "MyLab.AsyncProcessor.Sdk\MyLab.AsyncProcessor.Sdk.csproj", "{663F3931-A07B-415A-A2A8-7B66D816D660}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTest", "IntegrationTest", "{13D5165C-7B63-4C37-A959-8F3FAFCADD09}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{71C6F0BF-2465-44FE-9499-7BC84F89318D} = {13D5165C-7B63-4C37-A959-8F3FAFCADD09}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A4AF32F9-665C-4773-B77A-C3C0DF6DB186}

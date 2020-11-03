@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyLab.AsyncProcessor.Sdk;
+using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.LogDsl;
 using MyLab.Mq;
 

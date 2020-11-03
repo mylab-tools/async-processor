@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace MyLab.AsyncProcessor.Sdk
+namespace MyLab.AsyncProcessor.Sdk.DataModel
 {
     public class CreateRequest
     {
