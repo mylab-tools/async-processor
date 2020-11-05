@@ -63,7 +63,7 @@ namespace MyLab.AsyncProcessor.Api.Services
                 PublishTarget = new PublishTarget
                 {
                     Exchange = _options.QueueExchange,
-                    Routing = createRequest.Routing
+                    Routing = createRequest.Routing ?? _options.QueueRoutingKey
                 }
             };
 

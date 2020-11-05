@@ -23,9 +23,14 @@ namespace MyLab.AsyncProcessor.Api
         public TimeSpan MaxStoreTime { get; set; }
 
         /// <summary>
-        /// Gets queue exchange name to publish requests. REQUIRED.
+        /// Gets queue exchange name to publish requests. OPTIONAL.
         /// </summary>
         public string QueueExchange { get; set; }
+
+        /// <summary>
+        /// Gets queue routing key to publish requests. OPTIONAL.
+        /// </summary>
+        public string QueueRoutingKey { get; set; }
 
         /// <summary>
         /// Dead letter queue. OPTIONAL.

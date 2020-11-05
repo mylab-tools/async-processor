@@ -15,12 +15,12 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             _api = api;
         }
 
-        public Task SetRequestBizStepAsync(string bizStep)
+        public Task SetBizStepAsync(string bizStep)
         {
             return _api.UpdateBizStepAsync(_requestId, bizStep);
         }
 
-        public Task CompleteProcessingWithErrorAsync(string techMessage, string userFriendlyMessage = null)
+        public Task CompleteWithErrorAsync(string techMessage, string userFriendlyMessage = null)
         {
             return _api.CompleteWithErrorAsync(_requestId, new ProcessingError
             {
@@ -29,7 +29,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             });
         }
 
-        public Task CompleteProcessingWithErrorAsync(string userFriendlyMessage, Exception e)
+        public Task CompleteWithErrorAsync(string userFriendlyMessage, Exception e)
         {
             return _api.CompleteWithErrorAsync(_requestId, new ProcessingError
             {
@@ -39,7 +39,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             });
         }
 
-        public Task CompleteProcessingWithErrorAsync(Exception e)
+        public Task CompleteWithErrorAsync(Exception e)
         {
             return _api.CompleteWithErrorAsync(_requestId, new ProcessingError
             {
@@ -48,17 +48,17 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             });
         }
 
-        public Task CompleteProcessingWithResultAsync(object objectResult)
+        public Task CompleteWithResultAsync(object objectResult)
         {
             return _api.CompleteWithObjectResultAsync(_requestId, objectResult);
         }
 
-        public Task CompleteProcessingWithResultAsync(byte[] binaryResult)
+        public Task CompleteWithResultAsync(byte[] binaryResult)
         {
             return _api.CompleteWithBinaryResultAsync(_requestId, binaryResult);
         }
 
-        public Task CompleteProcessingAsync()
+        public Task CompleteAsync()
         {
             return _api.MakeRequestCompleted(_requestId);
         }
