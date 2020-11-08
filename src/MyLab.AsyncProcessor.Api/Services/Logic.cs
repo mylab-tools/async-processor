@@ -6,6 +6,7 @@ using MyLab.AsyncProcessor.Api.Tools;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Mq;
+using MyLab.Mq.PubSub;
 using MyLab.Redis;
 using MyLab.Redis.ObjectModel;
 

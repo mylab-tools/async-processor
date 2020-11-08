@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Mq;
+using MyLab.Mq.PubSub;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
 {
@@ -28,12 +29,10 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             var configSection = config.GetSection("AsyncProc");
             services.Configure<AsyncProcessorOptions>(configSection);
 
-            var opt = configSection.Get<AsyncProcessorOptions>();
-
-            services.LoadMqConfig(config);
+            services.ConfigureMq(config);
             services.AddMqConsuming(registrar =>
-                registrar.RegisterConsumer(
-                    new MqConsumer<QueueRequestMessage, AsyncProcMqConsumingLogic<TRequest>>(opt.Queue)
+                registrar.RegisterConsumerByOptions<AsyncProcessorOptions>(
+                    opt => new MqConsumer<QueueRequestMessage, AsyncProcMqConsumingLogic<TRequest>>(opt.Queue)
                 )
             );
             services.AddSingleton<IAsyncProcessingLogic<TRequest>, TLogic>();

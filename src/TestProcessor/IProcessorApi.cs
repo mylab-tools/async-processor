@@ -1,4 +1,5 @@
-﻿using MyLab.ApiClient;
+﻿using System.Threading.Tasks;
+using MyLab.ApiClient;
 using MyLab.StatusProvider;
 
 namespace TestProcessor
@@ -7,6 +8,6 @@ namespace TestProcessor
     public interface IProcessorApi
     {
         [Get("status")]
-        ApplicationStatus GetStatus();
+        Task<ApplicationStatus> GetStatus();
     }
 }

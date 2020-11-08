@@ -70,5 +70,20 @@ namespace MyLab.AsyncProcessor.Sdk
         /// <param name="content">bytes</param>
         [Put("{id}/result")]
         Task CompleteWithBinaryResultAsync([Path] string id, [BinContent] byte[] content);
+
+        /// <summary>
+        /// Gets request result as object
+        /// </summary>
+        /// <typeparam name="T">object type</typeparam>
+        /// <param name="id">request identifier</param>
+        [Get("{id}/result")]
+        Task<T> GetObjectResult<T>([Path] string id);
+
+        /// <summary>
+        /// Gets request result as binary
+        /// </summary>
+        /// <param name="id">request identifier</param>
+        [Get("{id}/result")]
+        Task<byte[]> GetBinResult([Path] string id);
     }
 }

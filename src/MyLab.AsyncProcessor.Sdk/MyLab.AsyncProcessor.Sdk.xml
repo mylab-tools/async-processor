@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MyLab.AsyncProcessor.Sdk</name>
+    </assembly>
+    <members>
+        <member name="T:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage">
+            <summary>
+            Describes queue message that contains request details
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage.Id">
+            <summary>
+            Request identifier
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage.Content">
+            <summary>
+            Request content
+            </summary>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi">
+            <summary>
+            Async processor API contract
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.CreateAsync(MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest)">
+            <summary>
+            Creates new request
+            </summary>
+            <param name="request">request data</param>
+            <returns>new request identifier</returns>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.GetStatusAsync(System.String)">
+            <summary>
+            Gets request status
+            </summary>
+            <param name="id">request id</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.UpdateBizStepAsync(System.String,System.String)">
+            <summary>
+            Update business level step
+            </summary>
+            <param name="id">request id</param>
+            <param name="bizStep">step identifier</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.CompleteWithErrorAsync(System.String,MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError)">
+            <summary>
+            Sets error for request status and complete request
+            </summary>
+            <param name="id">request id</param>
+            <param name="error">error description</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.MakeRequestProcessing(System.String)">
+            <summary>
+             Sets 'Processing' as value of processing step 
+            </summary>
+            <param name="id">request id</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.MakeRequestCompleted(System.String)">
+            <summary>
+             Sets 'Completed' as value of processing step 
+            </summary>
+            <param name="id">request id</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.CompleteWithObjectResultAsync(System.String,System.Object)">
+            <summary>
+            Sets object as result and complete request
+            </summary>
+            <param name="id">request id</param>
+            <param name="content">object-content</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.CompleteWithBinaryResultAsync(System.String,System.Byte[])">
+            <summary>
+            Sets bytes as result and complete request
+            </summary>
+            <param name="id">request id</param>
+            <param name="content">bytes</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.GetObjectResult``1(System.String)">
+            <summary>
+            Gets request result as object
+            </summary>
+            <typeparam name="T">object type</typeparam>
+            <param name="id">request identifier</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.GetBinResult(System.String)">
+            <summary>
+            Gets request result as binary
+            </summary>
+            <param name="id">request identifier</param>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcessorOptions">
+            <summary>
+            Contains AsyncProcessor config options
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcessorOptions.Queue">
+            <summary>
+            Queue name which is source of request-messages
+            </summary>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcIntegration">
+            <summary>
+            Extension for integration to app
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcIntegration.AddAsyncProcessing``2(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Adds AsyncProcessor logic
+            </summary>
+            <typeparam name="TRequest">request type</typeparam>
+            <typeparam name="TLogic">processing logic</typeparam>
+            <param name="services">application services</param>
+            <param name="config">application configuration</param>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.IAsyncProcessingLogic`1">
+            <summary>
+            Performs request processing
+            </summary>
+            <typeparam name="T">Request type</typeparam>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IAsyncProcessingLogic`1.ProcessAsync(`0,MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator)">
+            <summary>
+            Processes request
+            </summary>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator">
+            <summary>
+            Provides abilities for processing reporting
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.SetBizStepAsync(System.String)">
+            <summary>
+            Sets business level step fro request
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithErrorAsync(System.String,System.String)">
+            <summary>
+            Report about error and set request completed
+            </summary>
+            <param name="techMessage">technical message</param>
+            <param name="userFriendlyMessage">message for user</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithErrorAsync(System.String,System.Exception)">
+            <summary>
+            Report about error and set request completed
+            </summary>
+            <param name="userFriendlyMessage">message for user</param>
+            <param name="e">occurred exception</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithErrorAsync(System.Exception)">
+            <summary>
+            Report about error and set request completed
+            </summary>
+            <param name="e">occurred exception</param>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithResultAsync(System.Object)">
+            <summary>
+            Save result object and set request completed
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithResultAsync(System.Byte[])">
+            <summary>
+            Save binary result and set request completed
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteAsync">
+            <summary>
+            Set request completed without any result content
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -39,7 +39,8 @@ namespace MyLab.AsyncProcessor.Api
             services.AddRedisService(Configuration);
             services.AddMqPublisher();
             
-            services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
+            //services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
+            services.ConfigureMq(Configuration);
 
             var asyncProcConfig = Configuration.GetSection("AsyncProc");
 
@@ -52,7 +53,7 @@ namespace MyLab.AsyncProcessor.Api
         private void InitDeadLetterConsumer(IServiceCollection services, IConfigurationSection asyncProcConfig)
         {
             var options = asyncProcConfig.Get<AsyncProcessorOptions>();
-            if (!string.IsNullOrEmpty(options.DeadLetter))
+            if (options != null && !string.IsNullOrEmpty(options.DeadLetter))
             {
                 services.AddMqConsuming(registrar =>
                 {

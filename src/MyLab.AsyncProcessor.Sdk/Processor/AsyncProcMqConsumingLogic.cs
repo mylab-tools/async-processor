@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Mq;
+using MyLab.Mq.PubSub;
 using Newtonsoft.Json;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor

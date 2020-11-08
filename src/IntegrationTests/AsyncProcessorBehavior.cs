@@ -12,6 +12,8 @@ using MyLab.Mq;
 using MyLab.Mq.Communication;
 using MyLab.Mq.MqObjects;
 using MyLab.Redis;
+using MyLab.Syslog;
+using Newtonsoft.Json;
 using TestProcessor;
 using Xunit;
 using Xunit.Abstractions;
@@ -58,24 +60,35 @@ namespace IntegrationTests
             var asyncProcApi = StartAsyncProcApi(queueName);
             var processorApi = StartProcessor(queueName);
 
-            var queue = CreateQueue(queueName);
+            CreateQueue(queueName);
 
-            var request = new CreateRequest
+            var requestContent = new TestRequest
             {
-                Content = new TestRequest
-                {
-                    Value1 = "foo",
-                    Value2 = 10,
-                    Command = "concat"
-                }
+                Value1 = "foo",
+                Value2 = 10,
+                Command = "concat"
+            };
+
+            var createRequest = new CreateRequest
+            {
+                Content = SerializeRequest(requestContent)
             };
 
             //Act
 
-            asyncProcApi.Call(s => s.CreateAsync(request))
+            var reqIdResp = await asyncProcApi.Call(s => s.CreateAsync(createRequest));
+            await processorApi.Call(p => p.GetStatus());
+            var statusResp = await asyncProcApi.Call(s => s.GetStatusAsync(reqIdResp.ResponseContent));
+            var resResp = await asyncProcApi.Call(s => s.GetObjectResult<string>(reqIdResp.ResponseContent));
 
             //Assert
+            Assert.True(statusResp.ResponseContent.Successful);
+            Assert.Equal("foo-10", resResp.ResponseContent);
+        }
 
+        private string SerializeRequest(TestRequest request)
+        {
+            return JsonConvert.SerializeObject(request);
         }
 
         private MqQueue CreateQueue(string queueName)
@@ -110,6 +123,12 @@ namespace IntegrationTests
         {
             var tc=  _asyncProcTestApi.Start(srv =>
             {
+                srv.Configure<SyslogLoggerOptions>(opt =>
+                {
+                    opt.RemoteHost = "localhost";
+                    opt.RemotePort = 123456;
+                });
+
                 srv.Configure<MqOptions>(opt =>
                 {
                     opt.Host = MqOptions.Host;

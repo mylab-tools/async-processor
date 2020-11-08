@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.LogDsl;
 using MyLab.Mq;
+using MyLab.Mq.PubSub;
 
 namespace MyLab.AsyncProcessor.Api.Services
 {
@@ -20,7 +20,7 @@ namespace MyLab.AsyncProcessor.Api.Services
 
         public async Task Consume(MqMessage<QueueRequestMessage> message)
         {
-            await _logic.SetErrorAsync(message.Payload.Id, new ProcessingError
+            await _logic.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
             {
                TechMessage = "The request was placed in the dead letter"
             });

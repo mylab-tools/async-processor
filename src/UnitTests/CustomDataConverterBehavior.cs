@@ -1,4 +1,5 @@
 using MyLab.AsyncProcessor.Sdk;
+using MyLab.AsyncProcessor.Sdk.DataModel;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
