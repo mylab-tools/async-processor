@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Net.Http;
-using System.Text;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MyLab.AsyncProcessor.Api.Tools
 {
@@ -15,18 +14,18 @@ namespace MyLab.AsyncProcessor.Api.Tools
             _value = value;
         }
 
-        public HttpContent ToHttpContent()
+        public IActionResult ToActionResult()
         {
             switch (_mimeType)
             {
                 case "application/octet-stream":
                 {
                     var byteContent = Convert.FromBase64String(_value);
-                    return new ByteArrayContent(byteContent);
+                    return new FileContentResult(byteContent, _mimeType);
                 }
                 case "application/json":
                 {
-                    return new StringContent(_value, Encoding.UTF8, "application/json");
+                    return new ContentResult(){Content = _value, ContentType = _mimeType};
                 }
                 default:
                 {

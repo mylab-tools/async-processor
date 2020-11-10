@@ -96,9 +96,9 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [Produces("application/octet-stream", "application/json")]
         public async Task<IActionResult> GetResult([FromRoute] string id)
         {
-            var res = await _logic.GetResultAsync(id);
+            var res =  await _logic.GetResultAsync(id);
 
-            return Ok(res.ToHttpContent());
+            return res.ToActionResult();
         }
     }
 }

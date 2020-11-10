@@ -80,7 +80,7 @@ namespace MyLab.AsyncProcessor.Api.Tools
 
         public static async Task<string> ReadResultMimeType(HashRedisKey hash)
         {
-            return await hash.GetAsync("responseMime");
+            return await hash.GetAsync("resultMime");
         }
 
         public static async Task SaveResult(long length, string mimeType, HashRedisKey hash)
@@ -89,7 +89,8 @@ namespace MyLab.AsyncProcessor.Api.Tools
             {
                 new HashEntry("processStep", ProcessStep.Completed.ToString()),
                 new HashEntry("resultSize", length),
-                new HashEntry("resultMime", mimeType)
+                new HashEntry("resultMime", mimeType),
+                new HashEntry("successful", true.ToString())
             };
 
             await hash.SetAsync(props);
@@ -110,7 +111,8 @@ namespace MyLab.AsyncProcessor.Api.Tools
             var props = new[]
             {
                 new HashEntry("processStep", ProcessStep.Completed.ToString()),
-                new HashEntry("error", JsonConvert.SerializeObject(error))
+                new HashEntry("error", JsonConvert.SerializeObject(error)),
+                new HashEntry("successful", false.ToString())
             };
 
             await hash.SetAsync(props);

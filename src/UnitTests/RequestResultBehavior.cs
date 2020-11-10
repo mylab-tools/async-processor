@@ -18,7 +18,7 @@ namespace UnitTests
             string resultData = null;
 
             //Act
-            var httpContent = resp.ToHttpContent();
+            var httpContent = resp.ToActionResult();
             if (httpContent != null)
             {
                 var bytes = await httpContent.ReadAsByteArrayAsync();

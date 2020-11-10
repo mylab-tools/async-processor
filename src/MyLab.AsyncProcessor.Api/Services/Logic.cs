@@ -3,7 +3,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.AsyncProcessor.Api.Tools;
-using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Logging;
 using MyLab.Mq;

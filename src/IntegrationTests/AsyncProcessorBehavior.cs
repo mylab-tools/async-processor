@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -59,8 +60,8 @@ namespace IntegrationTests
 
             CreateQueue(queueName);
 
-            var asyncProcApi = StartAsyncProcApi(queueName);
-            var processorApi = StartProcessor(queueName);
+            var asyncProcApi = StartAsyncProcApi(queueName, out var asyncProcApiInnerClient);
+            var processorApi = StartProcessor(queueName, asyncProcApiInnerClient);
 
             var requestContent = new TestRequest
             {
@@ -105,7 +106,7 @@ namespace IntegrationTests
             return queueFactory.CreateWithName(queueName);
         }
 
-        private TestApiClient<IProcessorApi> StartProcessor(string queueName)
+        private TestApiClient<IProcessorApi> StartProcessor(string queueName, HttpClient asyncProcApiClient)
         {
             var tc = _procApi.Start(srv =>
             {
@@ -121,6 +122,11 @@ namespace IntegrationTests
                 {
                     opt.Queue = queueName;
                 });
+
+                srv.AddApiClients(reg =>
+                {
+                    reg.RegisterContract<IAsyncProcessorRequestsApi>();
+                }, new SingleHttpClientFactory(asyncProcApiClient));
             });
 
 
@@ -129,9 +135,9 @@ namespace IntegrationTests
             return tc;
         }
 
-        private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(string queueName)
+        private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(string queueName, out HttpClient innerHttpClient)
         {
-            var tc=  _asyncProcTestApi.Start(srv =>
+            var tc=  _asyncProcTestApi.Start(out innerHttpClient, srv =>
             {
                 srv.Configure<SyslogLoggerOptions>(opt =>
                 {
@@ -166,6 +172,19 @@ namespace IntegrationTests
             return tc;
         }
 
-        
+        class SingleHttpClientFactory : IHttpClientFactory
+        {
+            private readonly HttpClient _client;
+
+            public SingleHttpClientFactory(HttpClient client)
+            {
+                _client = client;
+            }
+
+            public HttpClient CreateClient(string name)
+            {
+                return _client;
+            }
+        }
     }
 }
