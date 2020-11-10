@@ -20,7 +20,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
 
         public async Task Consume(MqMessage<QueueRequestMessage> message)
         {
-            await _api.MakeRequestProcessing(message.Payload.Id);
+            await _api.MakeRequestProcessing(message.Payload.Id); 
 
             var request = JsonConvert.DeserializeObject<T>(message.Payload.Content);
 

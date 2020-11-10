@@ -105,7 +105,12 @@
             Extension for integration to app
             </summary>
         </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcIntegration.AddAsyncProcessing``2(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="F:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcIntegration.DefaultConfigSection">
+            <summary>
+            Default configuration section name
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcIntegration.AddAsyncProcessing``2(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.String)">
             <summary>
             Adds AsyncProcessor logic
             </summary>
@@ -113,6 +118,7 @@
             <typeparam name="TLogic">processing logic</typeparam>
             <param name="services">application services</param>
             <param name="config">application configuration</param>
+            <param name="configSectionName">configuration section name. <see cref="F:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcIntegration.DefaultConfigSection"/> by default</param>
         </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.Processor.IAsyncProcessingLogic`1">
             <summary>

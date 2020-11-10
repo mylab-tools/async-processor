@@ -56,11 +56,11 @@ namespace IntegrationTests
         {
             //Arrange
             var queueName = "async-proc-test:queue:" + Guid.NewGuid().ToString("N");
-            
-            var asyncProcApi = StartAsyncProcApi(queueName);
-            var processorApi = StartProcessor(queueName);
 
             CreateQueue(queueName);
+
+            var asyncProcApi = StartAsyncProcApi(queueName);
+            var processorApi = StartProcessor(queueName);
 
             var requestContent = new TestRequest
             {
@@ -79,9 +79,13 @@ namespace IntegrationTests
             var reqIdResp = await asyncProcApi.Call(s => s.CreateAsync(createRequest));
             await processorApi.Call(p => p.GetStatus());
             var statusResp = await asyncProcApi.Call(s => s.GetStatusAsync(reqIdResp.ResponseContent));
+
+            await Task.Delay(500);
+
             var resResp = await asyncProcApi.Call(s => s.GetObjectResult<string>(reqIdResp.ResponseContent));
 
             //Assert
+            Assert.True(!statusResp.IsUnexpectedStatusCode);
             Assert.True(statusResp.ResponseContent.Successful);
             Assert.Equal("foo-10", resResp.ResponseContent);
         }
@@ -112,7 +116,13 @@ namespace IntegrationTests
                     opt.User = MqOptions.User;
                     opt.Password = MqOptions.Password;
                 });
+
+                srv.Configure<MyLab.AsyncProcessor.Sdk.Processor.AsyncProcessorOptions>(opt =>
+                {
+                    opt.Queue = queueName;
+                });
             });
+
 
             tc.Output = _output;
 
@@ -139,7 +149,7 @@ namespace IntegrationTests
 
                 srv.Configure<RedisOptions>(opt =>
                 {
-                    opt.ConnectionString = "localhost:1201,allowAdmin=true";
+                    opt.ConnectionString = "localhost:10201,allowAdmin=true";
                 });
 
                 srv.Configure<AsyncProcessorOptions>(opt =>

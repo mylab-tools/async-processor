@@ -96,6 +96,8 @@ paths:
                 format: binary
         404:  
           $ref: '#/components/responses/RequestNotFound'
+        400:  
+          description: Request result is not ready
     put:
       description: Sets request result
       parameters:

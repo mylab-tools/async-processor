@@ -5,15 +5,15 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>C:\Users\ozzye\Documents\prog\my\async-processor-api\src\MyLab.AsyncProcessor.Sdk\MyLab.AsyncProcessor.Sdk.xml</DocumentationFile>
+    <DocumentationFile>.\MyLab.AsyncProcessor.Sdk.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>C:\Users\ozzye\Documents\prog\my\async-processor-api\src\MyLab.AsyncProcessor.Sdk\MyLab.AsyncProcessor.Sdk.xml</DocumentationFile>
+    <DocumentationFile>.\MyLab.AsyncProcessor.Sdk.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MyLab.ApiClient" Version="3.4.11" />
+    <PackageReference Include="MyLab.ApiClient" Version="3.5.13" />
     <PackageReference Include="MyLab.Mq" Version="1.7.7" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>

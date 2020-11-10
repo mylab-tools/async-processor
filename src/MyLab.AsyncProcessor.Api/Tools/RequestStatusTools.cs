@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
-using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
+using MyLab.Logging;
 using MyLab.Redis.ObjectModel;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -15,59 +13,69 @@ namespace MyLab.AsyncProcessor.Api.Tools
     {
         public static async Task WriteToRedis(this RequestStatus status, HashRedisKey hash)
         {
-            var props = new []
-            {
-                new HashEntry("processStep", status.Step.ToString()),
-                new HashEntry("bizStep", status.BizStep),
-                new HashEntry("successful", status.Successful),
-                new HashEntry("error", JsonConvert.SerializeObject(status.Error)),
-                new HashEntry("resultSize", status.ResponseSize),
-                new HashEntry("resultMime", status.ResponseMimeType)
-            };
+            var setProps = new List<HashEntry>();
+            var delProps = new List<string>();
 
-            await hash.SetAsync(props);
+            ProcProperty("processStep", status.Step.ToString());
+            ProcProperty("bizStep", status.BizStep);
+            ProcProperty("successful", status.Successful.ToString());
+            ProcProperty("resultSize", status.ResponseSize);
+            ProcProperty("resultMime", status.ResponseMimeType);
+
+            if(status.Error!= null)
+                setProps.Add(new HashEntry("error", JsonConvert.SerializeObject(status.Error)));
+            else
+            {
+                delProps.Add("error");
+            }
+
+            await hash.DeleteFieldsAsync(delProps.ToArray());
+            await hash.SetAsync(setProps.ToArray());
+
+            void ProcProperty(string name, RedisValue propVal)
+            {
+                if (!propVal.IsNull)
+                {
+                    setProps.Add(new HashEntry(name, propVal));
+                }
+                else
+                    delProps.Add(name);
+            }
         }
 
         public static async Task<RequestStatus> ReadFromRedis(HashRedisKey hash)
         {
             var props = await hash.GetAllAsync();
 
-            return new RequestStatus
+            var status = new RequestStatus();
+
+            foreach (var prop in props)
             {
-                Step = Enum.Parse<ProcessStep>(
-                    props.FirstOrDefault(p => p.Name == "processStep")
-                        .Value
-                        .ToString()
-                    ),
+                switch (prop.Name.ToString())
+                {
+                    case "processStep":
+                        status.Step = Enum.Parse<ProcessStep>(prop.Value);
+                        break;
+                    case "bizStep":
+                        status.BizStep = prop.Value;
+                        break;
+                    case "successful":
+                        status.Successful = bool.Parse(prop.Value);
+                        break;
+                    case "error":
+                        status.Error = JsonConvert.DeserializeObject<ProcessingError>(prop.Value);
+                        break;
+                    case "resultSize":
+                        status.ResponseSize = long.Parse(prop.Value);
+                        break;
+                    case "resultMime":
+                        status.ResponseMimeType = prop.Value;
+                        break;
+                    default: throw new IndexOutOfRangeException($"Invalid property '{prop}'");
+                }
+            }
 
-                BizStep = props
-                    .FirstOrDefault(p => p.Name == "bizStep")
-                    .Value
-                    .ToString(),
-
-                Successful = bool.Parse(
-                    props.FirstOrDefault(p => p.Name == "successful")
-                        .Value
-                        .ToString()
-                    ),
-
-                Error = JsonConvert.DeserializeObject<ProcessingError>(
-                    props.FirstOrDefault(p => p.Name == "error")
-                        .Value
-                        .ToString()
-                    ),
-
-                ResponseSize = long.Parse(
-                    props.FirstOrDefault(p => p.Name == "resultSize")
-                        .Value
-                        .ToString()
-                    ),
-
-                ResponseMimeType = props
-                    .FirstOrDefault(p => p.Name == "resultMime")
-                    .Value
-                    .ToString(),
-            };
+            return status;
         }
 
         public static async Task<string> ReadResultMimeType(HashRedisKey hash)

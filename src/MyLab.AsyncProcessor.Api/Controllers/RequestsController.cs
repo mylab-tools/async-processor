@@ -91,6 +91,7 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         }
 
         [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]
+        [ErrorToResponse(typeof(RequestResultNotReadyException), HttpStatusCode.BadRequest)]
         [HttpGet("{id}/result")]
         [Produces("application/octet-stream", "application/json")]
         public async Task<IActionResult> GetResult([FromRoute] string id)

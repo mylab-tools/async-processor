@@ -1,14 +1,11 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyLab.AsyncProcessor.Api.Services;
-using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.HttpMetrics;
-using MyLab.Mq;
 using MyLab.Mq.PubSub;
 using MyLab.Redis;
 using MyLab.StatusProvider;
@@ -30,7 +27,9 @@ namespace MyLab.AsyncProcessor.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(o=> o.AddExceptionProcessing());
+            services
+                .AddControllers(o=> o.AddExceptionProcessing())
+                .AddNewtonsoftJson();
 
             services.AddLogging(c => c.AddSyslog());
 
@@ -39,7 +38,7 @@ namespace MyLab.AsyncProcessor.Api
             services.AddRedisService(Configuration);
             services.AddMqPublisher();
             
-            //services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
+            services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
             services.ConfigureMq(Configuration);
 
             var asyncProcConfig = Configuration.GetSection("AsyncProc");
@@ -47,7 +46,9 @@ namespace MyLab.AsyncProcessor.Api
             InitDeadLetterConsumer(services, asyncProcConfig);
             services.Configure<AsyncProcessorOptions>(asyncProcConfig);
 
+            services.Configure<ExceptionProcessingOptions>(o => o.HideError = false);
 
+            services.AddSingleton<Logic>();
         }
 
         private void InitDeadLetterConsumer(IServiceCollection services, IConfigurationSection asyncProcConfig)
@@ -80,6 +81,8 @@ namespace MyLab.AsyncProcessor.Api
                 endpoints.MapControllers();
                 endpoints.MapMetrics();
             });
+
+            app.UseStatusApi();
         }
     }
 }

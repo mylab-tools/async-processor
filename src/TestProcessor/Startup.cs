@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyLab.AsyncProcessor.Sdk.Processor;
 using MyLab.StatusProvider;
+using Newtonsoft.Json;
 
 namespace TestProcessor
 {
@@ -43,7 +44,11 @@ namespace TestProcessor
                 endpoints.MapControllers();
             });
                 
-            app.UseStatusApi();
+            app.UseStatusApi(serializerSettings: new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto,
+                Formatting = Formatting.Indented
+            });
         }
     }
 }

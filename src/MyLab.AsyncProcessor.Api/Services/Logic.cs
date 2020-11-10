@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using MyLab.AsyncProcessor.Api.Tools;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
+using MyLab.Logging;
 using MyLab.Mq;
 using MyLab.Mq.PubSub;
 using MyLab.Redis;
@@ -107,6 +108,10 @@ namespace MyLab.AsyncProcessor.Api.Services
             var statusKey = await GetStatusKey(id);
             var resultMime = await RequestStatusTools.ReadResultMimeType(statusKey);
 
+            if (resultMime == null)
+                throw new RequestResultNotReadyException()
+                    .AndFactIs("reques-id", id);
+
             var resultKey = GetResultKey(id);
             var resultContent = await resultKey.GetAsync();
 
@@ -154,7 +159,8 @@ namespace MyLab.AsyncProcessor.Api.Services
             var statusKey = _redis.Db().Hash(statusKeyName);
 
             if (!await statusKey.ExistsAsync())
-                throw new RequestNotFoundException(id);
+                throw new RequestNotFoundException()
+                    .AndFactIs("reques-id", id);
 
             return statusKey;
         }

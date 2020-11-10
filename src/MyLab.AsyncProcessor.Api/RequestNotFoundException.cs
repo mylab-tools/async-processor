@@ -4,7 +4,7 @@ namespace MyLab.AsyncProcessor.Api
 {
     public class RequestNotFoundException : Exception
     {
-        public RequestNotFoundException(string id): base($"Request '{id}' not found")
+        public RequestNotFoundException(): base($"Request not found")
         {
             
         }
