@@ -1,67 +1,24 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Text;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using MyLab.ApiClient;
 using MyLab.ApiClient.Test;
-using MyLab.AsyncProcessor.Api;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
-using MyLab.Mq;
-using MyLab.Mq.Communication;
-using MyLab.Mq.MqObjects;
-using MyLab.Redis;
-using MyLab.Syslog;
-using Newtonsoft.Json;
 using TestProcessor;
 using Xunit;
-using Xunit.Abstractions;
 using Startup = MyLab.AsyncProcessor.Api.Startup;
 
 namespace IntegrationTests
 {
-    public class AsyncProcessorBehavior :
+    public partial class AsyncProcessorBehavior :
          IClassFixture<TestApi<Startup, IAsyncProcessorRequestsApi>>,
          IClassFixture<TestApi<TestProcessor.Startup, IProcessorApi>>
     {
-        private readonly TestApi<Startup, IAsyncProcessorRequestsApi> _asyncProcTestApi;
-        private readonly TestApi<TestProcessor.Startup, IProcessorApi> _procApi;
-        private readonly ITestOutputHelper _output;
-
-        static readonly MqOptions MqOptions = new MqOptions
-        {
-            Host = "localhost",
-            Port = 10202,
-            User = "guest",
-            Password = "guest"
-        };
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="AsyncProcessorBehavior"/>
-        /// </summary>
-        public AsyncProcessorBehavior(
-            TestApi<Startup, IAsyncProcessorRequestsApi> asyncProcTestApi,
-            TestApi<TestProcessor.Startup, IProcessorApi> procApi,
-            ITestOutputHelper output
-            )
-        {
-            _asyncProcTestApi = asyncProcTestApi;
-            _procApi = procApi;
-            _output = output;
-        }
-
         [Fact]
-        public async Task ShouldProcessMessage()
+        public async Task ShouldProcessMessageWithObjectResult()
         {
             //Arrange
-            var queueName = "async-proc-test:queue:" + Guid.NewGuid().ToString("N");
-
-            CreateQueue(queueName);
-
-            var asyncProcApi = StartAsyncProcApi(queueName, out var asyncProcApiInnerClient);
-            var processorApi = StartProcessor(queueName, asyncProcApiInnerClient);
+            var api = Prepare();
 
             var requestContent = new TestRequest
             {
@@ -70,121 +27,114 @@ namespace IntegrationTests
                 Command = "concat"
             };
 
-            var createRequest = new CreateRequest
+            //Act
+
+            var reqId = await SendRequest(requestContent, api);
+            var status = await ProcessRequest(reqId, api);
+            var result = await GetResult(api, rApi => rApi.GetObjectResult<string>(reqId));
+
+            //Assert
+            Assert.Equal(ProcessStep.Completed, status.Step);
+            Assert.True(status.Successful);
+            Assert.Equal("foo-10", result);
+        }
+
+        [Fact]
+        public async Task ShouldProcessMessageWithIntResult()
+        {
+            //Arrange
+            var api = Prepare();
+
+            var requestContent = new TestRequest
             {
-                Content = SerializeRequest(requestContent)
+                Value2 = 10,
+                Command = "incr-int"
             };
 
             //Act
 
-            var reqIdResp = await asyncProcApi.Call(s => s.CreateAsync(createRequest));
-            await processorApi.Call(p => p.GetStatus());
-            var statusResp = await asyncProcApi.Call(s => s.GetStatusAsync(reqIdResp.ResponseContent));
-
-            await Task.Delay(500);
-
-            var resResp = await asyncProcApi.Call(s => s.GetObjectResult<string>(reqIdResp.ResponseContent));
+            var reqId = await SendRequest(requestContent, api);
+            var status = await ProcessRequest(reqId, api);
+            var result = await GetResult(api, rApi => rApi.GetObjectResult<int>(reqId));
 
             //Assert
-            Assert.True(!statusResp.IsUnexpectedStatusCode);
-            Assert.True(statusResp.ResponseContent.Successful);
-            Assert.Equal("foo-10", resResp.ResponseContent);
+            Assert.Equal(ProcessStep.Completed, status.Step);
+            Assert.True(status.Successful);
+            Assert.Equal(11, result);
         }
 
-        private string SerializeRequest(TestRequest request)
+        [Fact]
+        public async Task ShouldProcessMessageWithBinResult()
         {
-            return JsonConvert.SerializeObject(request);
-        }
+            //Arrange
+            var api = Prepare();
 
-        private MqQueue CreateQueue(string queueName)
-        {
-            var queueFactory = new MqQueueFactory(new DefaultMqConnectionProvider(MqOptions))
+            var requestContent = new TestRequest
             {
-                AutoDelete = true
+                Value1 = "foo",
+                Command = "str-to-bin"
             };
 
-            return queueFactory.CreateWithName(queueName);
+            //Act
+
+            var reqId = await SendRequest(requestContent, api);
+            var status = await ProcessRequest(reqId, api);
+            var result = await GetResult(api, rApi => rApi.GetBinResult(reqId));
+
+            //Assert
+            Assert.Equal(ProcessStep.Completed, status.Step);
+            Assert.True(status.Successful);
+            Assert.Equal(Encoding.UTF8.GetBytes("foo"), result);
         }
 
-        private TestApiClient<IProcessorApi> StartProcessor(string queueName, HttpClient asyncProcApiClient)
+        [Fact]
+        public async Task ShouldProvideProcessingError()
         {
-            var tc = _procApi.Start(srv =>
+            //Arrange
+            var api = Prepare();
+
+            var requestContent = new TestRequest
             {
-                srv.Configure<MqOptions>(opt =>
-                {
-                    opt.Host = MqOptions.Host;
-                    opt.Port = MqOptions.Port;
-                    opt.User = MqOptions.User;
-                    opt.Password = MqOptions.Password;
-                });
+                Command = "unhandled-exception"
+            };
 
-                srv.Configure<MyLab.AsyncProcessor.Sdk.Processor.AsyncProcessorOptions>(opt =>
-                {
-                    opt.Queue = queueName;
-                });
+            //Act
 
-                srv.AddApiClients(reg =>
-                {
-                    reg.RegisterContract<IAsyncProcessorRequestsApi>();
-                }, new SingleHttpClientFactory(asyncProcApiClient));
-            });
+            var reqId = await SendRequest(requestContent, api);
+            var status = await ProcessRequest(reqId, api);
 
-
-            tc.Output = _output;
-
-            return tc;
+            //Assert
+            Assert.Equal(ProcessStep.Completed, status.Step);
+            Assert.False(status.Successful);
+            Assert.NotNull(status.Error);
+            Assert.Equal("foo", status.Error.TechMessage);
+            Assert.Null(status.Error.BizMessage);
+            Assert.NotNull(status.Error.TechInfo);
         }
 
-        private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(string queueName, out HttpClient innerHttpClient)
+        [Fact]
+        public async Task ShouldProvideReportedError()
         {
-            var tc=  _asyncProcTestApi.Start(out innerHttpClient, srv =>
+            //Arrange
+            var api = Prepare();
+
+            var requestContent = new TestRequest
             {
-                srv.Configure<SyslogLoggerOptions>(opt =>
-                {
-                    opt.RemoteHost = "localhost";
-                    opt.RemotePort = 123456;
-                });
+                Command = "reported-error"
+            };
 
-                srv.Configure<MqOptions>(opt =>
-                {
-                    opt.Host = MqOptions.Host;
-                    opt.Port = MqOptions.Port;
-                    opt.User = MqOptions.User;
-                    opt.Password = MqOptions.Password;
-                });
+            //Act
 
-                srv.Configure<RedisOptions>(opt =>
-                {
-                    opt.ConnectionString = "localhost:10201,allowAdmin=true";
-                });
+            var reqId = await SendRequest(requestContent, api);
+            var status = await ProcessRequest(reqId, api);
 
-                srv.Configure<AsyncProcessorOptions>(opt =>
-                {
-                    opt.MaxIdleTime = TimeSpan.FromMinutes(5);
-                    opt.QueueRoutingKey = queueName;
-                    opt.MaxStoreTime = TimeSpan.FromMinutes(5);
-                    opt.RedisKeyPrefix = "async-proc-test:" + Guid.NewGuid().ToString("N");
-                } );
-            });
-
-            tc.Output = _output;
-
-            return tc;
-        }
-
-        class SingleHttpClientFactory : IHttpClientFactory
-        {
-            private readonly HttpClient _client;
-
-            public SingleHttpClientFactory(HttpClient client)
-            {
-                _client = client;
-            }
-
-            public HttpClient CreateClient(string name)
-            {
-                return _client;
-            }
+            //Assert
+            Assert.Equal(ProcessStep.Completed, status.Step);
+            Assert.False(status.Successful);
+            Assert.NotNull(status.Error);
+            Assert.Equal("bar", status.Error.TechMessage);
+            Assert.Equal("foo", status.Error.BizMessage);
+            Assert.NotNull(status.Error.TechInfo);
         }
     }
 }

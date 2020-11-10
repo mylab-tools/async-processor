@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
+using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Mq;
 using MyLab.Mq.PubSub;
@@ -9,22 +11,32 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
 {
     class AsyncProcMqConsumingLogic<T> : IMqConsumerLogic<QueueRequestMessage>
     {
-        private readonly IAsyncProcessorRequestsApi _api;
         private readonly IAsyncProcessingLogic<T> _logic;
+        private readonly IWebCallReporter _reporter;
+        private readonly ApiClient<IAsyncProcessorRequestsApi> _api;
 
-        public AsyncProcMqConsumingLogic(IAsyncProcessorRequestsApi api, IAsyncProcessingLogic<T> logic)
+        public AsyncProcMqConsumingLogic(
+            IHttpClientFactory httpClientFactory,
+            IAsyncProcessingLogic<T> logic,
+            IWebCallReporterFactory reporterFactory = null)
         {
-            _api = api;
             _logic = logic;
+            _reporter = reporterFactory?.Create<IAsyncProcessorRequestsApi>();
+            _api = httpClientFactory.CreateApiClient<IAsyncProcessorRequestsApi>();
         }
 
         public async Task Consume(MqMessage<QueueRequestMessage> message)
         {
-            await _api.MakeRequestProcessing(message.Payload.Id); 
+            var processingReqDetails = await _api.Call(s => s.MakeRequestProcessing(message.Payload.Id)).GetDetailed(); 
+
+            _reporter?.Report(processingReqDetails);
 
             var request = JsonConvert.DeserializeObject<T>(message.Payload.Content);
 
-            var procOperator = new ProcessingOperator(message.Payload.Id, _api);
+            var procOperator = new ProcessingOperator(message.Payload.Id, _api)
+            {
+                Reporter = _reporter
+            };
 
             try
             {
@@ -32,11 +44,13 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             }
             catch (Exception e)
             {
-                await _api.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
+                var completeWithErrorReqDetails = await _api.Call(s => s.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
                 {
                     TechMessage = e.Message,
                     TechInfo = e.ToString()
-                });
+                })).GetDetailed();
+
+                _reporter?.Report(completeWithErrorReqDetails);
             }
         }
     }

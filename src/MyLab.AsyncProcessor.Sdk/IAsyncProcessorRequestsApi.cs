@@ -7,9 +7,14 @@ namespace MyLab.AsyncProcessor.Sdk
     /// <summary>
     /// Async processor API contract
     /// </summary>
-    [Api("v1/requests", Key = "async-proc")]
+    [Api("v1/requests", Key = ContractKey)]
     public interface IAsyncProcessorRequestsApi
     {
+        /// <summary>
+        /// Contract key
+        /// </summary>
+        public const string ContractKey = "async-proc";
+
         /// <summary>
         /// Creates new request
         /// </summary>

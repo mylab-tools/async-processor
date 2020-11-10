@@ -85,6 +85,9 @@ namespace MyLab.AsyncProcessor.Api.Controllers
             var content = await Request.BodyReader.ReadAsync();
             var mimeType = Request.ContentType;
 
+            if (mimeType == null)
+                return new UnsupportedMediaTypeResult();
+
             await _logic.CompleteWithResultAsync(id, content.Buffer.ToArray(), mimeType);
 
             return Ok();

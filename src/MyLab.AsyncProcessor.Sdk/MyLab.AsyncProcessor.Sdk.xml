@@ -24,6 +24,11 @@
             Async processor API contract
             </summary>
         </member>
+        <member name="F:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.ContractKey">
+            <summary>
+            Contract key
+            </summary>
+        </member>
         <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.CreateAsync(MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest)">
             <summary>
             Creates new request
@@ -174,6 +179,26 @@
         <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteAsync">
             <summary>
             Set request completed without any result content
+            </summary>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.IWebCallReporter">
+            <summary>
+            Reports about web calls
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IWebCallReporter.Report``1(MyLab.ApiClient.CallDetails{``0})">
+            <summary>
+            Reports about web call
+            </summary>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.IWebCallReporterFactory">
+            <summary>
+            Creates web call reporters
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IWebCallReporterFactory.Create``1">
+            <summary>
+            Create web call reporters
             </summary>
         </member>
     </members>

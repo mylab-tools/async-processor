@@ -18,6 +18,10 @@ namespace TestProcessor
                     return op.CompleteWithResultAsync(request.Value2+1);
                 case "str-to-bin":
                     return op.CompleteWithResultAsync(Encoding.UTF8.GetBytes(request.Value1));
+                case "unhandled-exception":
+                    throw new InvalidOperationException("foo");
+                case "reported-error":
+                    return op.CompleteWithErrorAsync("foo", new InvalidOperationException("bar"));
                 default: throw new IndexOutOfRangeException();
             }
         }

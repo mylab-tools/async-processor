@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
@@ -7,60 +8,76 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
     class ProcessingOperator : IProcessingOperator
     {
         private readonly string _requestId;
-        private readonly IAsyncProcessorRequestsApi _api;
+        private readonly ApiClient<IAsyncProcessorRequestsApi> _api;
 
-        public ProcessingOperator(string requestId, IAsyncProcessorRequestsApi api)
+        public IWebCallReporter Reporter { get; set; }
+
+        public ProcessingOperator(string requestId, ApiClient<IAsyncProcessorRequestsApi> api)
         {
             _requestId = requestId;
             _api = api;
         }
 
-        public Task SetBizStepAsync(string bizStep)
+        public async Task SetBizStepAsync(string bizStep)
         {
-            return _api.UpdateBizStepAsync(_requestId, bizStep);
+            var details = await _api.Call(s => s.UpdateBizStepAsync(_requestId, bizStep)).GetDetailed();
+
+            Reporter?.Report(details);
         }
 
-        public Task CompleteWithErrorAsync(string techMessage, string userFriendlyMessage = null)
+        public async Task CompleteWithErrorAsync(string techMessage, string userFriendlyMessage = null)
         {
-            return _api.CompleteWithErrorAsync(_requestId, new ProcessingError
+            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, new ProcessingError
             {
                 TechMessage = techMessage,
                 BizMessage = userFriendlyMessage
-            });
+            })).GetDetailed();
+
+            Reporter?.Report(details);
         }
 
-        public Task CompleteWithErrorAsync(string userFriendlyMessage, Exception e)
+        public async Task CompleteWithErrorAsync(string userFriendlyMessage, Exception e)
         {
-            return _api.CompleteWithErrorAsync(_requestId, new ProcessingError
+            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, new ProcessingError
             {
                 TechMessage = e.Message,
                 TechInfo = e.ToString(),
                 BizMessage = userFriendlyMessage
-            });
+            })).GetDetailed();
+
+            Reporter?.Report(details);
         }
 
-        public Task CompleteWithErrorAsync(Exception e)
+        public async Task CompleteWithErrorAsync(Exception e)
         {
-            return _api.CompleteWithErrorAsync(_requestId, new ProcessingError
+            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, new ProcessingError
             {
                 TechMessage = e.Message,
                 TechInfo = e.ToString()
-            });
+            })).GetDetailed();
+
+            Reporter?.Report(details);
         }
 
-        public Task CompleteWithResultAsync(object objectResult)
+        public async Task CompleteWithResultAsync(object objectResult)
         {
-            return _api.CompleteWithObjectResultAsync(_requestId, objectResult);
+            var details = await _api.Call(s => s.CompleteWithObjectResultAsync(_requestId, objectResult)).GetDetailed();
+
+            Reporter?.Report(details);
         }
 
-        public Task CompleteWithResultAsync(byte[] binaryResult)
+        public async  Task CompleteWithResultAsync(byte[] binaryResult)
         {
-            return _api.CompleteWithBinaryResultAsync(_requestId, binaryResult);
+            var details = await _api.Call(s => s.CompleteWithBinaryResultAsync(_requestId, binaryResult)).GetDetailed();
+
+            Reporter?.Report(details);
         }
 
-        public Task CompleteAsync()
+        public async  Task CompleteAsync()
         {
-            return _api.MakeRequestCompleted(_requestId);
+            var details = await _api.Call(s => s.MakeRequestCompleted(_requestId)).GetDetailed();
+
+            Reporter?.Report(details);
         }
     }
 }

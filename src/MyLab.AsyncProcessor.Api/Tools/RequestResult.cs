@@ -14,7 +14,7 @@ namespace MyLab.AsyncProcessor.Api.Tools
             _value = value;
         }
 
-        public IActionResult ToActionResult()
+        public ActionResult ToActionResult()
         {
             switch (_mimeType)
             {
