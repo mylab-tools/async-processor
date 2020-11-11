@@ -136,6 +136,16 @@
             Processes request
             </summary>
         </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.InterruptConsumingException">
+            <summary>
+            Throw to interrupt message consuming
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.InterruptConsumingException.#ctor">
+            <summary>
+            Initializes a new instance of <see cref="T:MyLab.AsyncProcessor.Sdk.Processor.InterruptConsumingException"/>
+            </summary>
+        </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator">
             <summary>
             Provides abilities for processing reporting

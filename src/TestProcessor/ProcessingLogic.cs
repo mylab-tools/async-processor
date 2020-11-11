@@ -22,6 +22,10 @@ namespace TestProcessor
                     throw new InvalidOperationException("foo");
                 case "reported-error":
                     return op.CompleteWithErrorAsync("foo", new InvalidOperationException("bar"));
+                case "biz-step":
+                    return op.SetBizStepAsync("foo-step");
+                case "interrupt":
+                    throw new InterruptConsumingException();
                 default: throw new IndexOutOfRangeException();
             }
         }

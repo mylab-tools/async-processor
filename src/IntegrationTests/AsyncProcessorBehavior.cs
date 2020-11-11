@@ -1,9 +1,11 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
 using MyLab.ApiClient.Test;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
+using MyLab.AsyncProcessor.Sdk.Processor;
 using TestProcessor;
 using Xunit;
 using Startup = MyLab.AsyncProcessor.Api.Startup;
@@ -135,6 +137,64 @@ namespace IntegrationTests
             Assert.Equal("bar", status.Error.TechMessage);
             Assert.Equal("foo", status.Error.BizMessage);
             Assert.NotNull(status.Error.TechInfo);
+        }
+
+        [Fact]
+        public async Task ShouldProvideConsumingError()
+        {
+            //Arrange
+            var api = Prepare();
+
+            var requestContent = new TestRequest
+            {
+                Command = "interrupt"
+            };
+
+            //Act
+
+            var reqId = await SendRequest(requestContent, api);
+            RequestStatus status = await ProcessRequest(reqId, api);
+
+            //Assert
+            Assert.Equal(ProcessStep.Completed, status.Step);
+            Assert.False(status.Successful);
+            Assert.NotNull(status.Error);
+            Assert.Equal("The request was placed in the dead letter", status.Error.TechMessage);
+            Assert.Null(status.Error.BizMessage);
+            Assert.Null(status.Error.TechInfo);
+        }
+
+        [Fact]
+        public async Task ShouldProvideBizStep()
+        {
+            //Arrange
+            var api = Prepare();
+
+            var requestContent = new TestRequest
+            {
+                Command = "biz-step"
+            };
+
+            //Act
+
+            var reqId = await SendRequest(requestContent, api);
+
+            await api.ProcApi.Call(p => p.GetStatus());
+
+            TestCallDetails<RequestStatus> statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
+            int tryCount = 0;
+
+            while (statusResp.ResponseContent.Step != ProcessStep.Completed && tryCount++ < 10)
+            {
+                await Task.Delay(500);
+                statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
+            }
+
+            var status = statusResp.ResponseContent;
+
+            //Assert
+            Assert.Equal(ProcessStep.Processing, status.Step);
+            Assert.Equal("foo-step", status.BizStep);
         }
     }
 }

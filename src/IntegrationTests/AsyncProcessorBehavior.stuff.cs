@@ -15,7 +15,6 @@ using MyLab.Mq.MqObjects;
 using MyLab.Redis;
 using MyLab.Syslog;
 using Newtonsoft.Json;
-using RabbitMQ.Client;
 using TestProcessor;
 using Xunit.Abstractions;
 using AsyncProcessorOptions = MyLab.AsyncProcessor.Api.AsyncProcessorOptions;
@@ -53,9 +52,13 @@ namespace IntegrationTests
 
         private (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) Prepare()
         {
-            var queue = CreateQueue();
+            var deadLetterExchange = CreateDeadLetterExchange();
+            var deadLetterQueue = CreateQueue(null);
+            deadLetterQueue.BindToExchange(deadLetterExchange);
 
-            var asyncProcApi = StartAsyncProcApi(queue, out var asyncProcApiInnerClient);
+            var queue = CreateQueue(deadLetterExchange);
+
+            var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, out var asyncProcApiInnerClient);
             var processorApi = StartProcessor(queue, asyncProcApiInnerClient);
 
             return (asyncProcApi, processorApi);
@@ -85,7 +88,7 @@ namespace IntegrationTests
 
             while (statusResp.ResponseContent.Step != ProcessStep.Completed && tryCount++ < 10)
             {
-                await Task.Delay(500);
+                await Task.Delay(200);
                 statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
             }
 
@@ -109,15 +112,27 @@ namespace IntegrationTests
             return JsonConvert.SerializeObject(request);
         }
 
-        private MqQueue CreateQueue()
+        private MqQueue CreateQueue(MqExchange deadLetterExchange)
         {
             var queueFactory = new MqQueueFactory(new DefaultMqConnectionProvider(MqOptions))
             {
-                AutoDelete = true
+                AutoDelete = true,
+                DeadLetterExchange = deadLetterExchange?.Name
             };
 
             string name = "async-proc-test:queue:" + Guid.NewGuid().ToString("N");
             return queueFactory.CreateWithName(name);
+        }
+
+        private MqExchange CreateDeadLetterExchange()
+        {
+            var exchangeFactory = new MqExchangeFactory(MqExchangeType.Fanout, new DefaultMqConnectionProvider(MqOptions))
+            {
+                AutoDelete = true
+            };
+
+            string name = "async-proc-test:queue:" + Guid.NewGuid().ToString("N") + ":dead-letter";
+            return exchangeFactory.CreateWithName(name);
         }
 
         private TestApiClient<IProcessorApi> StartProcessor(MqQueue queue, HttpClient asyncProcApiClient)
@@ -149,7 +164,9 @@ namespace IntegrationTests
             return tc;
         }
 
-        private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(MqQueue queue,
+        private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(
+            MqQueue queue,
+            MqQueue deadLetterQueue,
             out HttpClient innerHttpClient)
         {
             var tc = _asyncProcTestApi.Start(out innerHttpClient, srv =>
@@ -176,6 +193,7 @@ namespace IntegrationTests
                     opt.QueueRoutingKey = queue.Name;
                     opt.MaxStoreTime = TimeSpan.FromMinutes(5);
                     opt.RedisKeyPrefix = "async-proc-test:" + Guid.NewGuid().ToString("N");
+                    opt.DeadLetter = deadLetterQueue.Name;
                 });
             });
 

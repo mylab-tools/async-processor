@@ -41,26 +41,18 @@ namespace MyLab.AsyncProcessor.Api
             services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
             services.ConfigureMq(Configuration);
 
-            var asyncProcConfig = Configuration.GetSection("AsyncProc");
+            services.AddMqConsuming(registrar =>
+            {
+                registrar.RegisterConsumerByOptions<AsyncProcessorOptions, string>(
+                    opt => opt.DeadLetter,
+                    queue => new MqConsumer<QueueRequestMessage, DeadLetterConsumer>(queue));
+            });
 
-            InitDeadLetterConsumer(services, asyncProcConfig);
-            services.Configure<AsyncProcessorOptions>(asyncProcConfig);
+            services.Configure<AsyncProcessorOptions>(Configuration.GetSection("AsyncProc"));
 
             services.Configure<ExceptionProcessingOptions>(o => o.HideError = false);
 
             services.AddSingleton<Logic>();
-        }
-
-        private void InitDeadLetterConsumer(IServiceCollection services, IConfigurationSection asyncProcConfig)
-        {
-            var options = asyncProcConfig.Get<AsyncProcessorOptions>();
-            if (options != null && !string.IsNullOrEmpty(options.DeadLetter))
-            {
-                services.AddMqConsuming(registrar =>
-                {
-                    registrar.RegisterConsumer(new MqConsumer<QueueRequestMessage, DeadLetterConsumer>(options.DeadLetter));
-                });
-            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

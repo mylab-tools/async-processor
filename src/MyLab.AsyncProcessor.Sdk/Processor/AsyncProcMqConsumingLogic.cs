@@ -42,6 +42,10 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             {
                 await _logic.ProcessAsync(request, procOperator);
             }
+            catch (InterruptConsumingException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 var completeWithErrorReqDetails = await _api.Call(s => s.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
