@@ -43,7 +43,7 @@ namespace MyLab.AsyncProcessor.Sdk
         /// </summary>
         /// <param name="id">request id</param>
         /// <param name="error">error description</param>
-        [Put("{id}/status/biz-step")]
+        [Put("{id}/status/error")]
         Task CompleteWithErrorAsync([Path]string id, [JsonContent]ProcessingError error);
 
         /// <summary>
