@@ -94,6 +94,29 @@ Docker образ: [![Docker image](https://img.shields.io/docker/v/ozzyext/myla
 Имя узла конфигурации - `AsyncProc`. Ниже приведён пример конфигурации:
 
 ```json
-
+{
+  "RedisKeyPrefix": "myorder-async-proc:requests:",
+  "MaxIdleTime": "01:00",
+  "MaxStoreTime": "1",
+  "QueueExchange": "myorder:proc-exchange",
+  "QueueRoutingKey": "myorder:proc-queue",
+  "DeadLetter": "myorder:dead-letter",
+}
 ```
 
+, где:
+
+* `RedisKeyPrefix` - префикс для ключей в Redis, в которых будет хранится состояние обработки запроса;
+* `MaxIdleTime` - период жизни запроса после последней активности. В формате `TimeSpan`;
+* `MaxStoreTime` - период жизни запроса после перехода в конечное состояние `Completed`. В формате `TimeSpan`; 
+* `QueueExchange` - обменник`RabbitMQ`, в который будут подаваться сообщения для `BizProc`. Может быть не указан, если публикация должна осуществляться сразу в очередь; 
+* `QueueRoutingKey` - очередь для публикации, если не укзан `QueueExchange` или ключ маршрутизации (`routing key`) по умолчанию. Опциональный параметр; 
+* `DeadLetter` - определяет имя обменника, куда будут направлены сообщения из основной очереди, если произойдут сбои обработки. Опциональный параметр;
+
+Для параметров, содержащих период времени, формат значения доолжен соответствовать формату, подерживаемому  `TimeSpan`:
+
+* `6` - 6 дней;
+* `03:00` - 3 часа;
+* `00:01` - 1 минута.
+
+Подробнее о форматах `TimeSpan` [тут](https://docs.microsoft.com/ru-ru/dotnet/api/system.timespan.parse?view=netcore-3.1). 
