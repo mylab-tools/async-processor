@@ -1,0 +1,19 @@
+{
+	"$schema": "http://json-schema.org/schema#",
+	"description": "Describes queue message that contains request details",
+	"type": "object",
+	"properties": {
+		"id": {
+			"description": "Request identifier",
+			"type": "string"
+		},
+		"content": {
+			"description": "Request content"
+		}
+	},
+	"required": [
+		"id",
+		"content"
+	],
+	"additionalProperties": false
+}
