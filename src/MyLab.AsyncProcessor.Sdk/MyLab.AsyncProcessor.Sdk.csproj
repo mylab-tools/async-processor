@@ -11,7 +11,7 @@
     <FileVersion>1.0.0.1111</FileVersion>
     <Authors>Andrey O.</Authors>
     <Company>Andrey O.</Company>
-    <Description>Aloow to build processor-application for MyLab.AsyncProc</Description>
+    <Description>Allow to build processor-application for MyLab.AsyncProc</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
