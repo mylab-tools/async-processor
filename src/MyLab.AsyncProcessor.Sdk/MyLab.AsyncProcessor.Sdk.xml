@@ -4,6 +4,66 @@
         <name>MyLab.AsyncProcessor.Sdk</name>
     </assembly>
     <members>
+        <member name="T:MyLab.AsyncProcessor.Sdk.DataModel.ChangeStatusCallbackMessage">
+            <summary>
+            Contains info about request status changes
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ChangeStatusCallbackMessage.RequestId">
+            <summary>
+            Request identifier
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ChangeStatusCallbackMessage.NewBizStep">
+            <summary>
+            Not null if biz step changed
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ChangeStatusCallbackMessage.NewProcessStep">
+            <summary>
+            Not null if process step changed
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ChangeStatusCallbackMessage.OccurredError">
+            <summary>
+            Not null if there was processing error
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ChangeStatusCallbackMessage.ResultObjectJson">
+            <summary>
+            Not null if processing result is ready and it is an object
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ChangeStatusCallbackMessage.ResultBin">
+            <summary>
+            Not null if processing result is ready and it is a binary array
+            </summary>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError">
+            <summary>
+            Contains processing error details
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError.BizMessage">
+            <summary>
+            User friendly business level message
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError.TechMessage">
+            <summary>
+            Technical level message. e.g. exception message.
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError.TechInfo">
+            <summary>
+            Technical level description. e.g. exception stack trace.
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError.ErrorId">
+            <summary>
+            Literal error identifier
+            </summary>
+        </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage">
             <summary>
             Describes queue message that contains request details
@@ -17,6 +77,16 @@
         <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage.Content">
             <summary>
             Request content
+            </summary>
+        </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.ExceptionExtensions">
+            <summary>
+            Extensions for <see cref="T:System.Exception"/>
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.ExceptionExtensions.ToProcessingError(System.Exception,System.String,System.String)">
+            <summary>
+            Converts an exception to <see cref="T:MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError"/>
             </summary>
         </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi">
@@ -156,25 +226,10 @@
             Sets business level step fro request
             </summary>
         </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithErrorAsync(System.String,System.String)">
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithErrorAsync(MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError)">
             <summary>
             Report about error and set request completed
             </summary>
-            <param name="techMessage">technical message</param>
-            <param name="userFriendlyMessage">message for user</param>
-        </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithErrorAsync(System.String,System.Exception)">
-            <summary>
-            Report about error and set request completed
-            </summary>
-            <param name="userFriendlyMessage">message for user</param>
-            <param name="e">occurred exception</param>
-        </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithErrorAsync(System.Exception)">
-            <summary>
-            Report about error and set request completed
-            </summary>
-            <param name="e">occurred exception</param>
         </member>
         <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator.CompleteWithResultAsync(System.Object)">
             <summary>

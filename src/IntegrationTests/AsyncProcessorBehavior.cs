@@ -1,11 +1,9 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
 using MyLab.ApiClient.Test;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
-using MyLab.AsyncProcessor.Sdk.Processor;
 using TestProcessor;
 using Xunit;
 using Startup = MyLab.AsyncProcessor.Api.Startup;

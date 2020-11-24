@@ -1,0 +1,89 @@
+{
+	"$schema": "http://json-schema.org/schema#",
+	"description": "Contains info about request status changes",
+	"type": "object",
+	"properties": {
+		"reqId": {
+			"description": "Request identifier",
+			"type": "string"
+		},
+		"newBizStep": {
+			"description": "Not null if biz step changed",
+			"type": "string"
+		},
+		"newProcStep": {
+			"$ref": "#/definitions/processStep"
+		},
+		"error": {
+			"$ref": "#/definitions/processingError"
+		},
+		"resObj": {
+			"description": "Not null if processing result is ready and it is an object"
+		},
+		"resBin": {
+			"description": "Not null if processing result is ready and it is a binary array",
+			"type": "string"
+		}
+	},
+	"required": [
+		"reqId"
+	],
+	"additionalProperties": false,
+	"definitions": {
+		"processStep": {
+			"description": "Request processing step",
+			"type": "string",
+			"enum": [
+				"Pending",
+				"Processing",
+				"Completed"
+			]
+		},
+		"processingError": {
+			"description": "Contains processing error details",
+			"type": "object",
+			"properties": {
+				"errorId": {
+					"description": "Literal error identifier",
+					"type": "string"
+				}
+			},
+			"required": [
+				"errorId"
+			],
+			"additionalProperties": false,
+			"anyOf": [
+				{
+					"type": "object",
+					"properties": {
+						"bizMgs": {
+							"description": "User friendly business level message",
+							"type": "string"
+						}
+					},
+					"required": [
+						"bizMgs"
+					],
+					"additionalProperties": false
+				},
+				{
+					"type": "object",
+					"properties": {
+						"techMgs": {
+							"description": "Technical level message. e.g. exception message.",
+							"type": "string"
+						},
+						"techInfo": {
+							"description": "Technical level description. e.g. exception stack trace.",
+							"type": "string"
+						}
+					},
+					"required": [
+						"techMgs"
+					],
+					"additionalProperties": false
+				}
+			]
+		}
+	}
+}

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 
@@ -25,36 +24,9 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             Reporter?.Report(details);
         }
 
-        public async Task CompleteWithErrorAsync(string techMessage, string userFriendlyMessage = null)
+        public async Task CompleteWithErrorAsync(ProcessingError error)
         {
-            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, new ProcessingError
-            {
-                TechMessage = techMessage,
-                BizMessage = userFriendlyMessage
-            })).GetDetailed();
-
-            Reporter?.Report(details);
-        }
-
-        public async Task CompleteWithErrorAsync(string userFriendlyMessage, Exception e)
-        {
-            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, new ProcessingError
-            {
-                TechMessage = e.Message,
-                TechInfo = e.ToString(),
-                BizMessage = userFriendlyMessage
-            })).GetDetailed();
-
-            Reporter?.Report(details);
-        }
-
-        public async Task CompleteWithErrorAsync(Exception e)
-        {
-            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, new ProcessingError
-            {
-                TechMessage = e.Message,
-                TechInfo = e.ToString()
-            })).GetDetailed();
+            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, error)).GetDetailed();
 
             Reporter?.Report(details);
         }

@@ -20,7 +20,7 @@ namespace UnitTests
         {
             //Arrange
             var dataJson = "{\"property\":\"value\"}";
-            var json = "{\"routing\":null,\"data\":" + dataJson + "}";
+            var json = "{\"routing\":null,\"content\":" + dataJson + "}";
 
             //Act
             var obj = JsonConvert.DeserializeObject<CreateRequest>(json);
@@ -47,7 +47,7 @@ namespace UnitTests
 
             //Assert
             Assert.NotNull(json);
-            Assert.Equal("{\"routing\":null,\"data\":" + dataJson + "}", json);
+            Assert.Equal("{\"routing\":null,\"content\":" + dataJson + "}", json);
         }
     }
 }

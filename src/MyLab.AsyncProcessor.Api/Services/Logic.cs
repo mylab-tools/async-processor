@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.AsyncProcessor.Api.Tools;
 using MyLab.AsyncProcessor.Sdk.DataModel;
+using MyLab.LogDsl;
 using MyLab.Logging;
 using MyLab.Mq;
 using MyLab.Mq.PubSub;
@@ -17,20 +19,26 @@ namespace MyLab.AsyncProcessor.Api.Services
         private readonly IMqPublisher _mqPublisher;
         private readonly IRedisService _redis;
         private readonly AsyncProcessorOptions _options;
+        private readonly CallbackReporter _callbackReporter;
 
         public Logic(
             IRedisService redis, 
             IMqPublisher mqPublisher,
-            IOptions<AsyncProcessorOptions> options)
-            : this(redis, options.Value)
+            IOptions<AsyncProcessorOptions> options,
+            ILogger<Logic> logger = null)
         {
             _mqPublisher = mqPublisher;
-        }
-
-        public Logic(IRedisService redis, AsyncProcessorOptions options)
-        {
             _redis = redis;
-            _options = options;
+            _options = options.Value;
+
+            var log = logger?.Dsl();
+
+            var callBackQueue = _options?.Callback;
+            if (!string.IsNullOrEmpty(callBackQueue))
+                _callbackReporter = new CallbackReporter(_mqPublisher, callBackQueue)
+                {
+                    Log = log
+                };
         }
 
         public async Task<string> RegisterNewRequestAsync()
@@ -43,6 +51,8 @@ namespace MyLab.AsyncProcessor.Api.Services
             {
                 Step = ProcessStep.Pending
             };
+
+            _callbackReporter?.SendStartProcessing(newId);
 
             await initialStatus.WriteToRedis(statusKey);
             await statusKey.ExpireAsync(_options.MaxIdleTime);
@@ -84,6 +94,8 @@ namespace MyLab.AsyncProcessor.Api.Services
 
             await RequestStatusTools.SaveBizStep(bizStep, key);
             await key.ExpireAsync(_options.MaxIdleTime);
+
+            _callbackReporter?.SendBizStepChanged(id, bizStep);
         }
 
         public async Task CompleteWithErrorAsync(string id, ProcessingError error)
@@ -92,6 +104,8 @@ namespace MyLab.AsyncProcessor.Api.Services
 
             await RequestStatusTools.SaveError(error, key);
             await key.ExpireAsync(_options.MaxStoreTime);
+
+            _callbackReporter?.SendCompletedWithError(id, error);
         }
 
         public async Task SetRequestStep(string id, ProcessStep processStep)
@@ -100,6 +114,8 @@ namespace MyLab.AsyncProcessor.Api.Services
 
             await RequestStatusTools.SetStep(processStep, key);
             await key.ExpireAsync(_options.MaxIdleTime);
+
+            _callbackReporter?.SendRequestStep(id, processStep);
         }
 
         public async Task<RequestResult> GetResultAsync(string id)
@@ -129,6 +145,8 @@ namespace MyLab.AsyncProcessor.Api.Services
 
             await statusKey.ExpireAsync(_options.MaxStoreTime);
             await resultKey.ExpireAsync(_options.MaxStoreTime);
+
+            _callbackReporter?.SendCompletedWithResult(id, content, mimeType);
         }
 
         string CreateKeyName(string id, string suffix) => _options.RedisKeyPrefix.TrimEnd(':') + ':' + id + ":" + suffix;
