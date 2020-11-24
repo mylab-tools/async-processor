@@ -3,7 +3,7 @@ SDK: [![NuGet Version and Downloads count](https://buildstats.info/nuget/MyLab.A
 
 Docker образ: [![Docker image](https://img.shields.io/docker/v/ozzyext/mylab-async-proc-api?sort=semver)](https://hub.docker.com/r/ozzyext/mylab-async-proc-api)
 
-Спецификация API: [![API specification](https://img.shields.io/badge/OAS3-oas3%20specifiecation-green)](https://app.swaggerhub.com/apis/ozzy/my-lab_async_processor_api/1)
+Спецификация API: [![API specification](https://img.shields.io/badge/OAS3-oas3%20specifiecation-green)](https://app.swaggerhub.com/apis/ozzy/my-lab_async_processor_api/1.1)
 
 ```
 Поддерживаемые платформы: .NET Core 3.1+
