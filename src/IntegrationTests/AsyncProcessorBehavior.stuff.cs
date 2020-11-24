@@ -16,6 +16,7 @@ using MyLab.Redis;
 using MyLab.Syslog;
 using Newtonsoft.Json;
 using TestProcessor;
+using Xunit;
 using Xunit.Abstractions;
 using AsyncProcessorOptions = MyLab.AsyncProcessor.Api.AsyncProcessorOptions;
 using Startup = MyLab.AsyncProcessor.Api.Startup;
@@ -28,13 +29,7 @@ namespace IntegrationTests
         private readonly TestApi<TestProcessor.Startup, IProcessorApi> _procApi;
         private readonly ITestOutputHelper _output;
 
-        private static readonly MqOptions MqOptions = new MqOptions
-        {
-            Host = "localhost",
-            Port = 10202,
-            User = "guest",
-            Password = "guest"
-        };
+        
 
         /// <summary>
         /// Initializes a new instance of <see cref="AsyncProcessorBehavior"/>
@@ -50,15 +45,28 @@ namespace IntegrationTests
             _output = output;
         }
 
-        private (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) Prepare()
+        (MqQueue incomingMq, MqExchange exchange) CreateCallback()
+        {
+            string exchName = "async-proc-test:callback:" + Guid.NewGuid().ToString("N");
+            var exchange = TestTools.ExchangeFactory(autoDelete:false).CreateWithName(exchName);
+            
+            string queueName = "async-proc-test:callback:" + Guid.NewGuid().ToString("N");
+            var queue = TestTools.QueueFactory(autoDelete:false).CreateWithName(queueName);
+
+            queue.BindToExchange(exchange, "foo-callback");
+
+            return (queue, exchange);
+        }
+
+        private (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) Prepare(string callbackExchangeName)
         {
             var deadLetterExchange = CreateDeadLetterExchange();
-            var deadLetterQueue = CreateQueue(null);
+            var deadLetterQueue = CreateQueue(null, "async-proc-test:dead-letter:");
             deadLetterQueue.BindToExchange(deadLetterExchange);
 
             var queue = CreateQueue(deadLetterExchange);
 
-            var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, out var asyncProcApiInnerClient);
+            var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, callbackExchangeName, out var asyncProcApiInnerClient);
             var processorApi = StartProcessor(queue, asyncProcApiInnerClient);
 
             return (asyncProcApi, processorApi);
@@ -70,7 +78,8 @@ namespace IntegrationTests
         {
             var createRequest = new CreateRequest
             {
-                Content = SerializeRequest(request)
+                Content = SerializeRequest(request),
+                CallbackRouting = "foo-callback"
             };
 
             var reqIdResp = await api.AsyncProcApi.Call(s => s.CreateAsync(createRequest));
@@ -112,26 +121,20 @@ namespace IntegrationTests
             return JsonConvert.SerializeObject(request);
         }
 
-        private MqQueue CreateQueue(MqExchange deadLetterExchange)
+        private MqQueue CreateQueue(MqExchange deadLetterExchange, string prefix = null)
         {
-            var queueFactory = new MqQueueFactory(new DefaultMqConnectionProvider(MqOptions))
-            {
-                AutoDelete = true,
-                DeadLetterExchange = deadLetterExchange?.Name
-            };
+            var queueFactory = TestTools.QueueFactory();
+            queueFactory.DeadLetterExchange = deadLetterExchange?.Name;
 
-            string name = "async-proc-test:queue:" + Guid.NewGuid().ToString("N");
+            string name = (prefix ?? "async-proc-test:queue:") + Guid.NewGuid().ToString("N");
             return queueFactory.CreateWithName(name);
         }
 
         private MqExchange CreateDeadLetterExchange()
         {
-            var exchangeFactory = new MqExchangeFactory(MqExchangeType.Fanout, new DefaultMqConnectionProvider(MqOptions))
-            {
-                AutoDelete = true
-            };
+            var exchangeFactory = TestTools.ExchangeFactory(MqExchangeType.Fanout);
 
-            string name = "async-proc-test:queue:" + Guid.NewGuid().ToString("N") + ":dead-letter";
+            string name = "async-proc-test:dead-letter:" + Guid.NewGuid().ToString("N") + ":dead-letter";
             return exchangeFactory.CreateWithName(name);
         }
 
@@ -141,10 +144,10 @@ namespace IntegrationTests
             {
                 srv.Configure<MqOptions>(opt =>
                 {
-                    opt.Host = MqOptions.Host;
-                    opt.Port = MqOptions.Port;
-                    opt.User = MqOptions.User;
-                    opt.Password = MqOptions.Password;
+                    opt.Host = TestTools.MqOptions.Host;
+                    opt.Port = TestTools.MqOptions.Port;
+                    opt.User = TestTools.MqOptions.User;
+                    opt.Password = TestTools.MqOptions.Password;
                 });
 
                 srv.Configure<MyLab.AsyncProcessor.Sdk.Processor.AsyncProcessorOptions>(opt =>
@@ -167,6 +170,7 @@ namespace IntegrationTests
         private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(
             MqQueue queue,
             MqQueue deadLetterQueue,
+            string callbackExchangeName,
             out HttpClient innerHttpClient)
         {
             var tc = _asyncProcTestApi.Start(out innerHttpClient, srv =>
@@ -179,10 +183,10 @@ namespace IntegrationTests
 
                 srv.Configure<MqOptions>(opt =>
                 {
-                    opt.Host = MqOptions.Host;
-                    opt.Port = MqOptions.Port;
-                    opt.User = MqOptions.User;
-                    opt.Password = MqOptions.Password;
+                    opt.Host = TestTools.MqOptions.Host;
+                    opt.Port = TestTools.MqOptions.Port;
+                    opt.User = TestTools.MqOptions.User;
+                    opt.Password = TestTools.MqOptions.Password;
                 });
 
                 srv.Configure<RedisOptions>(opt => { opt.ConnectionString = "localhost:10201,allowAdmin=true"; });
@@ -194,6 +198,7 @@ namespace IntegrationTests
                     opt.MaxStoreTime = TimeSpan.FromMinutes(5);
                     opt.RedisKeyPrefix = "async-proc-test:" + Guid.NewGuid().ToString("N");
                     opt.DeadLetter = deadLetterQueue.Name;
+                    opt.Callback = callbackExchangeName;
                 });
             });
 
@@ -214,6 +219,31 @@ namespace IntegrationTests
             public HttpClient CreateClient(string name)
             {
                 return _client;
+            }
+        }
+
+        async Task AssertCallback(MqQueue callbackQueue, Action<ChangeStatusCallbackMessage>[] asserts)
+        {
+            await Task.Delay(500);
+
+            for (int i = 0; i < asserts.Length; i++)
+            {
+                var assert = asserts[i];
+                MqMessage<ChangeStatusCallbackMessage> msg;
+
+                try
+                {
+                    var rm = callbackQueue.Listen<ChangeStatusCallbackMessage>(TimeSpan.FromSeconds(5));
+                    rm.Ack();
+
+                    Assert.NotNull(rm.Message);
+
+                    assert(rm.Message.Payload);
+                }
+                catch (TimeoutException)
+                {
+                    Assert.True(false, $"Callback msg #'{i}' read timeout");
+                }
             }
         }
     }

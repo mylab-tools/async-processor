@@ -20,16 +20,18 @@ namespace MyLab.AsyncProcessor.Api.Tools
             _callbackQueue = callbackQueue;
         }
 
-        public void SendStartProcessing(string requestId)
-        {
-            SendCallbackMessage(new ChangeStatusCallbackMessage
-            {
-                RequestId = requestId,
-                NewProcessStep = ProcessStep.Processing
-            });
-        }
+        //public void SendStartProcessing(string requestId, string callbackRouting)
+        //{
+        //    SendCallbackMessage(
+        //        callbackRouting,
+        //        new ChangeStatusCallbackMessage
+        //    {
+        //        RequestId = requestId,
+        //        NewProcessStep = ProcessStep.Processing
+        //    });
+        //}
 
-        public void SendCompletedWithResult(string requestId, byte[] resultBin, string mimeType)
+        public void SendCompletedWithResult(string requestId, string callbackRouting, byte[] resultBin, string mimeType)
         {
             var msg = new ChangeStatusCallbackMessage
             {
@@ -56,12 +58,16 @@ namespace MyLab.AsyncProcessor.Api.Tools
             }
 
 
-            SendCallbackMessage(msg);
+            SendCallbackMessage(
+                callbackRouting,
+                msg);
         }
 
-        public void SendCompletedWithError(string requestId, ProcessingError procError)
+        public void SendCompletedWithError(string requestId, string callbackRouting, ProcessingError procError)
         {
-            SendCallbackMessage(new ChangeStatusCallbackMessage
+            SendCallbackMessage(
+                callbackRouting,
+                new ChangeStatusCallbackMessage
             {
                 RequestId = requestId,
                 NewProcessStep = ProcessStep.Completed,
@@ -69,31 +75,35 @@ namespace MyLab.AsyncProcessor.Api.Tools
             });
         }
 
-        public void SendRequestStep(string requestId, ProcessStep step)
+        public void SendRequestStep(string requestId, string callbackRouting, ProcessStep step)
         {
-            SendCallbackMessage(new ChangeStatusCallbackMessage
+            SendCallbackMessage(
+                callbackRouting,
+                new ChangeStatusCallbackMessage
             {
                 RequestId = requestId,
                 NewProcessStep = step
             });
         }
 
-        public void SendBizStepChanged(string requestId, string newBizStep)
+        public void SendBizStepChanged(string requestId, string callbackRouting, string newBizStep)
         {
-            SendCallbackMessage(new ChangeStatusCallbackMessage
+            SendCallbackMessage(
+                callbackRouting,
+                new ChangeStatusCallbackMessage
             {
                 RequestId = requestId,
                 NewBizStep = newBizStep
             });
         }
 
-        void SendCallbackMessage(ChangeStatusCallbackMessage msg)
+        void SendCallbackMessage(string callbackRouting, ChangeStatusCallbackMessage msg)
         {
             try
             {
                 _mqPublisher.Publish(new OutgoingMqEnvelop<ChangeStatusCallbackMessage>
                 {
-                    PublishTarget = new PublishTarget { Routing = _callbackQueue },
+                    PublishTarget = new PublishTarget { Exchange = _callbackQueue, Routing = callbackRouting },
                     Message = new MqMessage<ChangeStatusCallbackMessage>(msg)
                 });
             }

@@ -52,15 +52,13 @@ namespace MyLab.AsyncProcessor.Api.Services
                 Step = ProcessStep.Pending
             };
 
-            _callbackReporter?.SendStartProcessing(newId);
-
             await initialStatus.WriteToRedis(statusKey);
             await statusKey.ExpireAsync(_options.MaxIdleTime);
 
             return newId;
         }
 
-        public void SendRequestToProcessor(string id, CreateRequest createRequest)
+        public async Task SendRequestToProcessor(string id, CreateRequest createRequest)
         {
             var msgPayload = new QueueRequestMessage
             {
@@ -74,11 +72,17 @@ namespace MyLab.AsyncProcessor.Api.Services
                 PublishTarget = new PublishTarget
                 {
                     Exchange = _options.QueueExchange,
-                    Routing = createRequest.Routing ?? _options.QueueRoutingKey
+                    Routing = createRequest.ProcRouting ?? _options.QueueRoutingKey
                 }
             };
 
             _mqPublisher.Publish(msg);
+
+            if(createRequest.CallbackRouting != null)
+            {
+                var callBackRoutingKey = GetCallbackRoutingKey(id);
+                await callBackRoutingKey.SetAsync(createRequest.CallbackRouting);
+            }
         }
 
         public async Task<RequestStatus> GetStatusAsync(string id)
@@ -95,7 +99,8 @@ namespace MyLab.AsyncProcessor.Api.Services
             await RequestStatusTools.SaveBizStep(bizStep, key);
             await key.ExpireAsync(_options.MaxIdleTime);
 
-            _callbackReporter?.SendBizStepChanged(id, bizStep);
+            var callbackRouting = await GetCallbackRouting(id);
+            _callbackReporter?.SendBizStepChanged(id, callbackRouting, bizStep);
         }
 
         public async Task CompleteWithErrorAsync(string id, ProcessingError error)
@@ -105,7 +110,8 @@ namespace MyLab.AsyncProcessor.Api.Services
             await RequestStatusTools.SaveError(error, key);
             await key.ExpireAsync(_options.MaxStoreTime);
 
-            _callbackReporter?.SendCompletedWithError(id, error);
+            var callbackRouting = await GetCallbackRouting(id);
+            _callbackReporter?.SendCompletedWithError(id, callbackRouting, error);
         }
 
         public async Task SetRequestStep(string id, ProcessStep processStep)
@@ -115,7 +121,8 @@ namespace MyLab.AsyncProcessor.Api.Services
             await RequestStatusTools.SetStep(processStep, key);
             await key.ExpireAsync(_options.MaxIdleTime);
 
-            _callbackReporter?.SendRequestStep(id, processStep);
+            var callbackRouting = await GetCallbackRouting(id);
+            _callbackReporter?.SendRequestStep(id, callbackRouting, processStep);
         }
 
         public async Task<RequestResult> GetResultAsync(string id)
@@ -146,7 +153,8 @@ namespace MyLab.AsyncProcessor.Api.Services
             await statusKey.ExpireAsync(_options.MaxStoreTime);
             await resultKey.ExpireAsync(_options.MaxStoreTime);
 
-            _callbackReporter?.SendCompletedWithResult(id, content, mimeType);
+            var callbackRouting = await GetCallbackRouting(id);
+            _callbackReporter?.SendCompletedWithResult(id, callbackRouting, content, mimeType);
         }
 
         string CreateKeyName(string id, string suffix) => _options.RedisKeyPrefix.TrimEnd(':') + ':' + id + ":" + suffix;
@@ -186,6 +194,19 @@ namespace MyLab.AsyncProcessor.Api.Services
         {
             var resultKeyName = CreateKeyName(id, "result");
             return _redis.Db().String(resultKeyName);
+        }
+
+        StringRedisKey GetCallbackRoutingKey(string id)
+        {
+            var resultKeyName = CreateKeyName(id, "callback-routing");
+            return _redis.Db().String(resultKeyName);
+        }
+
+        async Task<string> GetCallbackRouting(string id)
+        {
+            var key = GetCallbackRoutingKey(id);
+            var val = await key.GetAsync();
+            return val.HasValue ? (string)val : null;
         }
     }
 }

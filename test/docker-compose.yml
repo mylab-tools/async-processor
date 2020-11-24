@@ -2,14 +2,21 @@ version: '3.2'
 
 services:
   redis:
-    container_name: redis
+    container_name: mylab-async-rpoc-redis
     image: redis:6
     ports: 
     - 10201:6379
+    networks:
+    - mylab-async-rpoc
 
   rabbit:
-    container_name: rabbit
+    container_name: mylab-async-rpoc-rabbit
     image: rabbitmq:3.8.3-management
     ports:
       - "10202:5672"
+      - "10203:15672"
+    networks:
+    - mylab-async-rpoc
       
+networks:
+  mylab-async-rpoc:

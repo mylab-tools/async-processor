@@ -38,7 +38,7 @@ namespace MyLab.AsyncProcessor.Api
         public string DeadLetter { get; set; }
 
         /// <summary>
-        /// Callback queue name. OPTIONAL.
+        /// Callback exchange name. OPTIONAL.
         /// </summary>
         public string Callback { get; set; }
     }

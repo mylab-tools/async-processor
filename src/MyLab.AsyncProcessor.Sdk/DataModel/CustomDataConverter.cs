@@ -16,6 +16,19 @@ namespace MyLab.AsyncProcessor.Sdk.DataModel
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
+            switch (reader.TokenType)
+            {
+                case JsonToken.Null:
+                    return null;
+                case JsonToken.Integer:
+                case JsonToken.Float:
+                case JsonToken.String:
+                case JsonToken.Boolean:
+                case JsonToken.Date:
+                case JsonToken.Bytes:
+                    return reader.Value?.ToString();
+            }
+
             return JObject.Load(reader).ToString(Formatting.None);
         }
 
