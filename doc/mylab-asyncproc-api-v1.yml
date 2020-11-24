@@ -193,3 +193,7 @@ components:
           type: string
           description: Additioanl technical information
           example: '[stack trace]'
+        errorId:
+          type: string
+          description: Literal error identifier
+          example: "my-error:some-thing-wrong"

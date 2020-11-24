@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
+using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.Processor;
 
 namespace TestProcessor
@@ -21,7 +22,7 @@ namespace TestProcessor
                 case "unhandled-exception":
                     throw new InvalidOperationException("foo");
                 case "reported-error":
-                    return op.CompleteWithErrorAsync("foo", new InvalidOperationException("bar"));
+                    return op.CompleteWithErrorAsync(new InvalidOperationException("bar").ToProcessingError(bizMsg: "foo"));
                 case "biz-step":
                     return op.SetBizStepAsync("foo-step");
                 case "interrupt":

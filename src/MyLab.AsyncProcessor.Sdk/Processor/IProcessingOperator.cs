@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MyLab.AsyncProcessor.Sdk.DataModel;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
 {
@@ -15,20 +16,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         /// <summary>
         /// Report about error and set request completed
         /// </summary>
-        /// <param name="techMessage">technical message</param>
-        /// <param name="userFriendlyMessage">message for user</param>
-        Task CompleteWithErrorAsync(string techMessage, string userFriendlyMessage = null);
-        /// <summary>
-        /// Report about error and set request completed
-        /// </summary>
-        /// <param name="userFriendlyMessage">message for user</param>
-        /// <param name="e">occurred exception</param>
-        Task CompleteWithErrorAsync(string userFriendlyMessage, Exception e);
-        /// <summary>
-        /// Report about error and set request completed
-        /// </summary>
-        /// <param name="e">occurred exception</param>
-        Task CompleteWithErrorAsync(Exception e);
+        Task CompleteWithErrorAsync(ProcessingError error);
         /// <summary>
         /// Save result object and set request completed
         /// </summary>
