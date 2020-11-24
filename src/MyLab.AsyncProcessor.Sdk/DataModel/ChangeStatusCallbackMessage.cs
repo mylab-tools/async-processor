@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace MyLab.AsyncProcessor.Sdk.DataModel
 {

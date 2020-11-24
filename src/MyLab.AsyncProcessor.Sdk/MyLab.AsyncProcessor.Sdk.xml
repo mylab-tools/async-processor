@@ -39,6 +39,26 @@
             Not null if processing result is ready and it is a binary array
             </summary>
         </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest">
+            <summary>
+            Contains request parameters
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest.ProcRouting">
+            <summary>
+            Defines queue routing to send message to processor
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest.CallbackRouting">
+            <summary>
+            Defines queue routing to send callback messages through callback exchange
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest.Content">
+            <summary>
+            Request content
+            </summary>
+        </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.DataModel.ProcessingError">
             <summary>
             Contains processing error details

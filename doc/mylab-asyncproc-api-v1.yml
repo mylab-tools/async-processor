@@ -133,15 +133,20 @@ components:
   schemas:
     CreateRequest:
       type: object
+      description: Contains request parameters
       properties:
-        routing:
+        procRouting:
           type: string
-          description: Defines queue routing
+          description: Defines queue routing to send message to processor
           example: big
+        callbackRouting:
+          type: string
+          description: Defines queue routing to send callback messages through callback exchange
+          example: client1
         content: 
           type: object
           additionalProperties: true
-          description: request content
+          description: Request content
           example: { "value": "123", "dt": "10.10.2010"  }
       required:
       - content

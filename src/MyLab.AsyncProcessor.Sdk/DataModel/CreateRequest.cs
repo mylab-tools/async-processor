@@ -2,11 +2,26 @@
 
 namespace MyLab.AsyncProcessor.Sdk.DataModel
 {
+    /// <summary>
+    /// Contains request parameters
+    /// </summary>
     public class CreateRequest
     {
-        [JsonProperty("routing")]
-        public string Routing { get; set; }
+        /// <summary>
+        /// Defines queue routing to send message to processor
+        /// </summary>
+        [JsonProperty("procRouting")]
+        public string ProcRouting { get; set; }
 
+        /// <summary>
+        /// Defines queue routing to send callback messages through callback exchange
+        /// </summary>
+        [JsonProperty("callbackRouting")]
+        public string CallbackRouting { get; set; }
+
+        /// <summary>
+        /// Request content
+        /// </summary>
         [JsonProperty("content")]
         [JsonConverter(typeof(CustomDataConverter))]
         public string Content { get; set; }

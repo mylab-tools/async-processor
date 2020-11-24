@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
 using MyLab.ApiClient.Test;
@@ -18,181 +19,320 @@ namespace IntegrationTests
         public async Task ShouldProcessMessageWithObjectResult()
         {
             //Arrange
-            var api = Prepare();
 
-            var requestContent = new TestRequest
+            var callback = CreateCallback();
+
+            try
             {
-                Value1 = "foo",
-                Value2 = 10,
-                Command = "concat"
-            };
+                var api = Prepare(callback.exchange.Name);
 
-            //Act
+                var requestContent = new TestRequest
+                {
+                    Value1 = "foo",
+                    Value2 = 10,
+                    Command = "concat"
+                };
 
-            var reqId = await SendRequest(requestContent, api);
-            var status = await ProcessRequest(reqId, api);
-            var result = await GetResult(api, rApi => rApi.GetObjectResult<string>(reqId));
+                //Act
 
-            //Assert
-            Assert.Equal(ProcessStep.Completed, status.Step);
-            Assert.True(status.Successful);
-            Assert.Equal("foo-10", result);
+                var reqId = await SendRequest(requestContent, api);
+                var status = await ProcessRequest(reqId, api);
+                var result = await GetResult(api, rApi => rApi.GetObjectResult<string>(reqId));
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.True(status.Successful);
+                Assert.Equal("foo-10", result);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                        Assert.Equal("foo-10", m.ResultObjectJson);
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
         }
 
         [Fact]
         public async Task ShouldProcessMessageWithIntResult()
         {
             //Arrange
-            var api = Prepare();
-
-            var requestContent = new TestRequest
+            var callback = CreateCallback();
+            try
             {
-                Value2 = 10,
-                Command = "incr-int"
-            };
+                var api = Prepare(callback.exchange.Name);
 
-            //Act
+                var requestContent = new TestRequest
+                {
+                    Value2 = 10,
+                    Command = "incr-int"
+                };
 
-            var reqId = await SendRequest(requestContent, api);
-            var status = await ProcessRequest(reqId, api);
-            var result = await GetResult(api, rApi => rApi.GetObjectResult<int>(reqId));
+                //Act
 
-            //Assert
-            Assert.Equal(ProcessStep.Completed, status.Step);
-            Assert.True(status.Successful);
-            Assert.Equal(11, result);
+                var reqId = await SendRequest(requestContent, api);
+                var status = await ProcessRequest(reqId, api);
+                var result = await GetResult(api, rApi => rApi.GetObjectResult<int>(reqId));
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.True(status.Successful);
+                Assert.Equal(11, result);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                        Assert.Equal("11", m.ResultObjectJson);
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
         }
 
         [Fact]
         public async Task ShouldProcessMessageWithBinResult()
         {
             //Arrange
-            var api = Prepare();
-
-            var requestContent = new TestRequest
+            var callback = CreateCallback();
+            try
             {
-                Value1 = "foo",
-                Command = "str-to-bin"
-            };
+                var api = Prepare(callback.exchange.Name);
 
-            //Act
+                var requestContent = new TestRequest
+                {
+                    Value1 = "foo",
+                    Command = "str-to-bin"
+                };
 
-            var reqId = await SendRequest(requestContent, api);
-            var status = await ProcessRequest(reqId, api);
-            var result = await GetResult(api, rApi => rApi.GetBinResult(reqId));
+                var expectedBin = Encoding.UTF8.GetBytes("foo");
 
-            //Assert
-            Assert.Equal(ProcessStep.Completed, status.Step);
-            Assert.True(status.Successful);
-            Assert.Equal(Encoding.UTF8.GetBytes("foo"), result);
+                //Act
+
+                var reqId = await SendRequest(requestContent, api);
+                var status = await ProcessRequest(reqId, api);
+                var result = await GetResult(api, rApi => rApi.GetBinResult(reqId));
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.True(status.Successful);
+                Assert.Equal(expectedBin, result);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                        Assert.Equal(Convert.ToBase64String(expectedBin), Convert.ToBase64String(m.ResultBin));
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
         }
 
         [Fact]
         public async Task ShouldProvideProcessingError()
         {
             //Arrange
-            var api = Prepare();
-
-            var requestContent = new TestRequest
+            var callback = CreateCallback();
+            try
             {
-                Command = "unhandled-exception"
-            };
+                var api = Prepare(callback.exchange.Name);
 
-            //Act
+                var requestContent = new TestRequest
+                {
+                    Command = "unhandled-exception"
+                };
 
-            var reqId = await SendRequest(requestContent, api);
-            var status = await ProcessRequest(reqId, api);
+                //Act
 
-            //Assert
-            Assert.Equal(ProcessStep.Completed, status.Step);
-            Assert.False(status.Successful);
-            Assert.NotNull(status.Error);
-            Assert.Equal("foo", status.Error.TechMessage);
-            Assert.Null(status.Error.BizMessage);
-            Assert.NotNull(status.Error.TechInfo);
+                var reqId = await SendRequest(requestContent, api);
+                var status = await ProcessRequest(reqId, api);
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.False(status.Successful);
+                Assert.NotNull(status.Error);
+                Assert.Equal("foo", status.Error.TechMessage);
+                Assert.Null(status.Error.BizMessage);
+                Assert.NotNull(status.Error.TechInfo);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                        Assert.Null(m.ResultObjectJson);
+                        Assert.NotNull(m.OccurredError);
+                        Assert.Equal("foo", m.OccurredError.TechMessage);
+                        Assert.NotNull(m.OccurredError.TechInfo);
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
         }
 
         [Fact]
         public async Task ShouldProvideReportedError()
         {
             //Arrange
-            var api = Prepare();
-
-            var requestContent = new TestRequest
+            var callback = CreateCallback();
+            try
             {
-                Command = "reported-error"
-            };
+                var api = Prepare(callback.exchange.Name);
 
-            //Act
+                var requestContent = new TestRequest
+                {
+                    Command = "reported-error"
+                };
 
-            var reqId = await SendRequest(requestContent, api);
-            var status = await ProcessRequest(reqId, api);
+                //Act
 
-            //Assert
-            Assert.Equal(ProcessStep.Completed, status.Step);
-            Assert.False(status.Successful);
-            Assert.NotNull(status.Error);
-            Assert.Equal("bar", status.Error.TechMessage);
-            Assert.Equal("foo", status.Error.BizMessage);
-            Assert.NotNull(status.Error.TechInfo);
+                var reqId = await SendRequest(requestContent, api);
+                var status = await ProcessRequest(reqId, api);
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.False(status.Successful);
+                Assert.NotNull(status.Error);
+                Assert.Equal("bar", status.Error.TechMessage);
+                Assert.Equal("foo", status.Error.BizMessage);
+                Assert.NotNull(status.Error.TechInfo);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                        Assert.Null(m.ResultObjectJson);
+                        Assert.NotNull(m.OccurredError);
+                        Assert.Equal("bar", m.OccurredError.TechMessage);
+                        Assert.Equal("foo", m.OccurredError.BizMessage);
+                        Assert.NotNull(m.OccurredError.TechInfo);
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
         }
 
         [Fact]
         public async Task ShouldProvideConsumingError()
         {
             //Arrange
-            var api = Prepare();
-
-            var requestContent = new TestRequest
+            var callback = CreateCallback();
+            try
             {
-                Command = "interrupt"
-            };
+                var api = Prepare(callback.exchange.Name);
 
-            //Act
+                var requestContent = new TestRequest
+                {
+                    Command = "interrupt"
+                };
 
-            var reqId = await SendRequest(requestContent, api);
-            RequestStatus status = await ProcessRequest(reqId, api);
+                //Act
 
-            //Assert
-            Assert.Equal(ProcessStep.Completed, status.Step);
-            Assert.False(status.Successful);
-            Assert.NotNull(status.Error);
-            Assert.Equal("The request was placed in the dead letter", status.Error.TechMessage);
-            Assert.Null(status.Error.BizMessage);
-            Assert.Null(status.Error.TechInfo);
+                var reqId = await SendRequest(requestContent, api);
+
+                RequestStatus status = await ProcessRequest(reqId, api);
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.False(status.Successful);
+                Assert.NotNull(status.Error);
+                Assert.Equal("The request was placed in the dead letter", status.Error.TechMessage);
+                Assert.Null(status.Error.BizMessage);
+                Assert.Null(status.Error.TechInfo);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                        Assert.Null(m.ResultObjectJson);
+                        Assert.NotNull(m.OccurredError);
+                        Assert.Equal("The request was placed in the dead letter", m.OccurredError.TechMessage);
+                        Assert.Null(m.OccurredError.BizMessage);
+                        Assert.Null(m.OccurredError.TechInfo);
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
         }
 
         [Fact]
         public async Task ShouldProvideBizStep()
         {
             //Arrange
-            var api = Prepare();
-
-            var requestContent = new TestRequest
+            var callback = CreateCallback();
+            try
             {
-                Command = "biz-step"
-            };
+                var api = Prepare(callback.exchange.Name);
 
-            //Act
+                var requestContent = new TestRequest
+                {
+                    Command = "biz-step"
+                };
 
-            var reqId = await SendRequest(requestContent, api);
+                //Act
 
-            await api.ProcApi.Call(p => p.GetStatus());
+                var reqId = await SendRequest(requestContent, api);
 
-            TestCallDetails<RequestStatus> statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
-            int tryCount = 0;
+                await api.ProcApi.Call(p => p.GetStatus());
 
-            while (statusResp.ResponseContent.Step != ProcessStep.Completed && tryCount++ < 10)
-            {
-                await Task.Delay(500);
-                statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
+                TestCallDetails<RequestStatus> statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
+                int tryCount = 0;
+
+                while (statusResp.ResponseContent.Step != ProcessStep.Completed && tryCount++ < 10)
+                {
+                    await Task.Delay(500);
+                    statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
+                }
+
+                var status = statusResp.ResponseContent;
+
+                //Assert
+                Assert.Equal(ProcessStep.Processing, status.Step);
+                Assert.Equal("foo-step", status.BizStep);
             }
-
-            var status = statusResp.ResponseContent;
-
-            //Assert
-            Assert.Equal(ProcessStep.Processing, status.Step);
-            Assert.Equal("foo-step", status.BizStep);
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
         }
     }
 }

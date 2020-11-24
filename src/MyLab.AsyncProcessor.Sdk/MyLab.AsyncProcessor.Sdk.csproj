@@ -7,12 +7,12 @@
     <PackageProjectUrl>https://github.com/ozzy-ext-mylab/async-processor-api</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ozzy-ext-mylab/async-processor-api.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.1.0.2411</AssemblyVersion>
-    <FileVersion>1.1.0.2411</FileVersion>
+    <AssemblyVersion>1.1.1.2511</AssemblyVersion>
+    <FileVersion>1.1.1.2511</FileVersion>
     <Authors>Andrey O.</Authors>
     <Company>Andrey O.</Company>
     <Description>Allow to build processor-application for MyLab.AsyncProc</Description>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="MyLab.ApiClient" Version="3.5.14" />
-    <PackageReference Include="MyLab.Mq" Version="1.7.9" />
+    <PackageReference Include="MyLab.Mq" Version="1.7.12" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
