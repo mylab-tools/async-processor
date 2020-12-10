@@ -47,7 +47,7 @@ namespace UnitTests
 
             //Assert
             Assert.NotNull(json);
-            Assert.Equal("{\"routing\":null,\"content\":" + dataJson + "}", json);
+            Assert.Equal("{\"procRouting\":null,\"callbackRouting\":null,\"content\":" + dataJson + "}", json);
         }
     }
 }

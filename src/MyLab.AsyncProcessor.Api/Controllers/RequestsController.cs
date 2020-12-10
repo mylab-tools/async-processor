@@ -23,7 +23,7 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         public async Task<IActionResult> Create(CreateRequest request)
         {
             var newId = await _logic.RegisterNewRequestAsync();
-            _logic.SendRequestToProcessor(newId, request);
+            await _logic.SendRequestToProcessorAsync(newId, request);
 
             return Ok(newId);
         }
@@ -62,7 +62,7 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [HttpPost("{id}/status/step/processing")]
         public async Task<IActionResult> MakeRequestProcessing([FromRoute] string id)
         {
-            await _logic.SetRequestStep(id, ProcessStep.Processing);
+            await _logic.SetRequestStepAsync(id, ProcessStep.Processing);
 
             return Ok();
         }
@@ -71,7 +71,7 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [HttpPost("{id}/status/step/completed")]
         public async Task<IActionResult> MakeRequestCompeted([FromRoute] string id)
         {
-            await _logic.SetRequestStep(id, ProcessStep.Completed);
+            await _logic.SetRequestStepAsync(id, ProcessStep.Completed);
 
             return Ok();
         }
