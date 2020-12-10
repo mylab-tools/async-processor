@@ -58,7 +58,7 @@ namespace MyLab.AsyncProcessor.Api.Services
             return newId;
         }
 
-        public async Task SendRequestToProcessor(string id, CreateRequest createRequest)
+        public async Task SendRequestToProcessorAsync(string id, CreateRequest createRequest)
         {
             var msgPayload = new QueueRequestMessage
             {
@@ -87,47 +87,47 @@ namespace MyLab.AsyncProcessor.Api.Services
 
         public async Task<RequestStatus> GetStatusAsync(string id)
         {
-            var key = await GetStatusKey(id);
+            var key = await GetStatusKeyAsync(id);
 
             return await RequestStatusTools.ReadFromRedis(key);
         }
 
         public async Task SetBizStepAsync(string id, string bizStep)
         {
-            var key = await GetStatusKey(id);
+            var key = await GetStatusKeyAsync(id);
 
             await RequestStatusTools.SaveBizStep(bizStep, key);
-            await key.ExpireAsync(_options.MaxIdleTime);
+            await UpdateIdleExpiration(id);
 
-            var callbackRouting = await GetCallbackRouting(id);
+            var callbackRouting = await GetCallbackRoutingAsync(id);
             _callbackReporter?.SendBizStepChanged(id, callbackRouting, bizStep);
         }
 
         public async Task CompleteWithErrorAsync(string id, ProcessingError error)
         {
-            var key = await GetStatusKey(id);
+            var key = await GetStatusKeyAsync(id);
 
             await RequestStatusTools.SaveError(error, key);
-            await key.ExpireAsync(_options.MaxStoreTime);
+            await UpdateStoreExpiration(id);
 
-            var callbackRouting = await GetCallbackRouting(id);
+            var callbackRouting = await GetCallbackRoutingAsync(id);
             _callbackReporter?.SendCompletedWithError(id, callbackRouting, error);
         }
 
-        public async Task SetRequestStep(string id, ProcessStep processStep)
+        public async Task SetRequestStepAsync(string id, ProcessStep processStep)
         {
-            var key = await GetStatusKey(id);
+            var key = await GetStatusKeyAsync(id);
 
             await RequestStatusTools.SetStep(processStep, key);
-            await key.ExpireAsync(_options.MaxIdleTime);
+            await UpdateIdleExpiration(id);
 
-            var callbackRouting = await GetCallbackRouting(id);
+            var callbackRouting = await GetCallbackRoutingAsync(id);
             _callbackReporter?.SendRequestStep(id, callbackRouting, processStep);
         }
 
         public async Task<RequestResult> GetResultAsync(string id)
         {
-            var statusKey = await GetStatusKey(id);
+            var statusKey = await GetStatusKeyAsync(id);
             var resultMime = await RequestStatusTools.ReadResultMimeType(statusKey);
 
             if (resultMime == null)
@@ -142,7 +142,7 @@ namespace MyLab.AsyncProcessor.Api.Services
 
         public async Task CompleteWithResultAsync(string id, byte[] content, string mimeType)
         {
-            var statusKey = await GetStatusKey(id);
+            var statusKey = await GetStatusKeyAsync(id);
 
             await RequestStatusTools.SaveResult(content.Length, mimeType, statusKey);
 
@@ -150,10 +150,9 @@ namespace MyLab.AsyncProcessor.Api.Services
             var strContent = ContentToString(content, mimeType);
             await resultKey.SetAsync(strContent);
 
-            await statusKey.ExpireAsync(_options.MaxStoreTime);
-            await resultKey.ExpireAsync(_options.MaxStoreTime);
+            await UpdateIdleExpiration(id);
 
-            var callbackRouting = await GetCallbackRouting(id);
+            var callbackRouting = await GetCallbackRoutingAsync(id);
             _callbackReporter?.SendCompletedWithResult(id, callbackRouting, content, mimeType);
         }
 
@@ -178,14 +177,14 @@ namespace MyLab.AsyncProcessor.Api.Services
             }
         }
 
-        async Task<HashRedisKey> GetStatusKey(string id)
+        async Task<HashRedisKey> GetStatusKeyAsync(string id)
         {
             var statusKeyName = CreateKeyName(id, "status");
             var statusKey = _redis.Db().Hash(statusKeyName);
 
             if (!await statusKey.ExistsAsync())
                 throw new RequestNotFoundException()
-                    .AndFactIs("reques-id", id);
+                    .AndFactIs("request-id", id);
 
             return statusKey;
         }
@@ -193,20 +192,46 @@ namespace MyLab.AsyncProcessor.Api.Services
         StringRedisKey GetResultKey(string id)
         {
             var resultKeyName = CreateKeyName(id, "result");
-            return _redis.Db().String(resultKeyName);
+            var resultKey = _redis.Db().String(resultKeyName);
+
+            return resultKey;
         }
 
         StringRedisKey GetCallbackRoutingKey(string id)
         {
-            var resultKeyName = CreateKeyName(id, "callback-routing");
-            return _redis.Db().String(resultKeyName);
+            var callbackKeyName = CreateKeyName(id, "callback-routing");
+            var callbackKey = _redis.Db().String(callbackKeyName);
+
+            return callbackKey;
         }
 
-        async Task<string> GetCallbackRouting(string id)
+        async Task<string> GetCallbackRoutingAsync(string id)
         {
             var key = GetCallbackRoutingKey(id);
             var val = await key.GetAsync();
             return val.HasValue ? (string)val : null;
+        }
+
+        async Task UpdateIdleExpiration(string id)
+        {
+            var statusKey = await GetStatusKeyAsync(id);
+            var callbackKey = GetCallbackRoutingKey(id);
+            var resultKey = GetResultKey(id);
+
+            await statusKey.ExpireAsync(_options.MaxIdleTime);
+            await callbackKey.ExpireAsync(_options.MaxIdleTime);
+            await resultKey.ExpireAsync(_options.MaxIdleTime);
+        }
+
+        async Task UpdateStoreExpiration(string id)
+        {
+            var statusKey = await GetStatusKeyAsync(id);
+            var callbackKey = GetCallbackRoutingKey(id);
+            var resultKey = GetResultKey(id);
+
+            await statusKey.ExpireAsync(_options.MaxStoreTime);
+            await callbackKey.ExpireAsync(_options.MaxStoreTime);
+            await resultKey.ExpireAsync(_options.MaxStoreTime);
         }
     }
 }
