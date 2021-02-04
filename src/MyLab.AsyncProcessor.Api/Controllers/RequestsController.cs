@@ -22,10 +22,10 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateRequest request)
         {
-            var newId = await _logic.RegisterNewRequestAsync();
-            await _logic.SendRequestToProcessorAsync(newId, request);
+            var id = await _logic.RegisterNewRequestAsync(request.RequestId);
+            await _logic.SendRequestToProcessorAsync(id, request);
 
-            return Ok(newId);
+            return Ok(id);
         }
 
         [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]

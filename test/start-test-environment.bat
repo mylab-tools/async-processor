@@ -1,1 +1,1 @@
-docker-compose up -d
+docker-compose -p mylab-async-proc-test up -d

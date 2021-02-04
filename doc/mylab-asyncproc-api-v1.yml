@@ -135,6 +135,10 @@ components:
       type: object
       description: Contains request parameters
       properties:
+        requestId:
+          type: string
+          description:  Defines predefined request id
+          example: '54f5d4d35d47497a92386e46acc6d3be'
         procRouting:
           type: string
           description: Defines queue routing to send message to processor

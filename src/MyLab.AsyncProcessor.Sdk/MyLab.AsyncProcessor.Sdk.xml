@@ -44,6 +44,11 @@
             Contains request parameters
             </summary>
         </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest.RequestId">
+            <summary>
+            Defines predefined request id
+            </summary>
+        </member>
         <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest.ProcRouting">
             <summary>
             Defines queue routing to send message to processor
