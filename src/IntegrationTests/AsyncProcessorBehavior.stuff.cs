@@ -74,10 +74,12 @@ namespace IntegrationTests
 
         private async Task<string> SendRequest(
             TestRequest request,
-            (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) api)
+            (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) api,
+            string predefinedId = null)
         {
             var createRequest = new CreateRequest
             {
+                RequestId = predefinedId,
                 Content = SerializeRequest(request),
                 CallbackRouting = "foo-callback"
             };

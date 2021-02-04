@@ -8,6 +8,12 @@ namespace MyLab.AsyncProcessor.Sdk.DataModel
     public class CreateRequest
     {
         /// <summary>
+        /// Defines predefined request id
+        /// </summary>
+        [JsonProperty("requestId")]
+        public string RequestId { get; set; }
+
+        /// <summary>
         /// Defines queue routing to send message to processor
         /// </summary>
         [JsonProperty("procRouting")]

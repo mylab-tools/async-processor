@@ -41,11 +41,11 @@ namespace MyLab.AsyncProcessor.Api.Services
                 };
         }
 
-        public async Task<string> RegisterNewRequestAsync()
+        public async Task<string> RegisterNewRequestAsync(string preassignedId = null)
         {
-            var newId = Guid.NewGuid().ToString("N");
+            var resId = preassignedId ?? Guid.NewGuid().ToString("N");
             
-            var statusKey = _redis.Db().Hash(CreateKeyName(newId, "status"));
+            var statusKey = _redis.Db().Hash(CreateKeyName(resId, "status"));
 
             var initialStatus = new RequestStatus
             {
@@ -55,7 +55,7 @@ namespace MyLab.AsyncProcessor.Api.Services
             await initialStatus.WriteToRedis(statusKey);
             await statusKey.ExpireAsync(_options.MaxIdleTime);
 
-            return newId;
+            return resId;
         }
 
         public async Task SendRequestToProcessorAsync(string id, CreateRequest createRequest)

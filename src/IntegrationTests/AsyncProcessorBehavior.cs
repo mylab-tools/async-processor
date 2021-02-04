@@ -16,6 +16,39 @@ namespace IntegrationTests
          IClassFixture<TestApi<TestProcessor.Startup, IProcessorApi>>
     {
         [Fact]
+        public async Task ShouldAssignPredefinedRequestId()
+        {
+            //Arrange
+
+            var callback = CreateCallback();
+            string predefinedRequestId = Guid.NewGuid().ToString("N");
+
+            try
+            {
+                var api = Prepare(callback.exchange.Name);
+
+                var requestContent = new TestRequest
+                {
+                    Value1 = "foo",
+                    Value2 = 10,
+                    Command = "concat"
+                };
+
+                //Act
+
+                var reqId = await SendRequest(requestContent, api, predefinedRequestId);
+                
+                //Assert
+                Assert.Equal(predefinedRequestId, reqId);
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
+        }
+
+        [Fact]
         public async Task ShouldProcessMessageWithObjectResult()
         {
             //Arrange
