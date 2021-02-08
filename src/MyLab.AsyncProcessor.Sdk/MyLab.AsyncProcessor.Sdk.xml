@@ -276,7 +276,7 @@
             Reports about web calls
             </summary>
         </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IWebCallReporter.Report``1(MyLab.ApiClient.CallDetails{``0})">
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IWebCallReporter.Report(MyLab.ApiClient.CallDetails)">
             <summary>
             Reports about web call
             </summary>
