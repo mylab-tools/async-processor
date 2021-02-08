@@ -10,7 +10,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         /// <summary>
         /// Reports about web call
         /// </summary>
-        void Report<T>(CallDetails<T> call);
+        void Report(CallDetails call);
     }
 
     /// <summary>

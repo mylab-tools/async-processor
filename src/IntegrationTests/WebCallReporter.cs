@@ -16,7 +16,7 @@ namespace IntegrationTests
             _output = output;
             _contractType = contractType;
         }
-        public void Report<T>(CallDetails<T> call)
+        public void Report(CallDetails call)
         {
             _output.WriteLine(call.ToTestDump(_contractType));
         }

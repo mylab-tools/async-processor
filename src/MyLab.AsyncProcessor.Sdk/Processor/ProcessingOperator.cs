@@ -19,35 +19,35 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
 
         public async Task SetBizStepAsync(string bizStep)
         {
-            var details = await _api.Call(s => s.UpdateBizStepAsync(_requestId, bizStep)).GetDetailed();
+            var details = await _api.Request(s => s.UpdateBizStepAsync(_requestId, bizStep)).GetDetailedAsync();
 
             Reporter?.Report(details);
         }
 
         public async Task CompleteWithErrorAsync(ProcessingError error)
         {
-            var details = await _api.Call(s => s.CompleteWithErrorAsync(_requestId, error)).GetDetailed();
+            var details = await _api.Request(s => s.CompleteWithErrorAsync(_requestId, error)).GetDetailedAsync();
 
             Reporter?.Report(details);
         }
 
         public async Task CompleteWithResultAsync(object objectResult)
         {
-            var details = await _api.Call(s => s.CompleteWithObjectResultAsync(_requestId, objectResult)).GetDetailed();
+            var details = await _api.Request(s => s.CompleteWithObjectResultAsync(_requestId, objectResult)).GetDetailedAsync();
 
             Reporter?.Report(details);
         }
 
         public async  Task CompleteWithResultAsync(byte[] binaryResult)
         {
-            var details = await _api.Call(s => s.CompleteWithBinaryResultAsync(_requestId, binaryResult)).GetDetailed();
+            var details = await _api.Request(s => s.CompleteWithBinaryResultAsync(_requestId, binaryResult)).GetDetailedAsync();
 
             Reporter?.Report(details);
         }
 
         public async  Task CompleteAsync()
         {
-            var details = await _api.Call(s => s.MakeRequestCompleted(_requestId)).GetDetailed();
+            var details = await _api.Request(s => s.MakeRequestCompleted(_requestId)).GetDetailedAsync();
 
             Reporter?.Report(details);
         }

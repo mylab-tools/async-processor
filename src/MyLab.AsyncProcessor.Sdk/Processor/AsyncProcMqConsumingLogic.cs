@@ -27,7 +27,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
 
         public async Task Consume(MqMessage<QueueRequestMessage> message)
         {
-            var processingReqDetails = await _api.Call(s => s.MakeRequestProcessing(message.Payload.Id)).GetDetailed(); 
+            var processingReqDetails = await _api.Request(s => s.MakeRequestProcessing(message.Payload.Id)).GetDetailedAsync(); 
 
             _reporter?.Report(processingReqDetails);
 
@@ -48,11 +48,11 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             }
             catch (Exception e)
             {
-                var completeWithErrorReqDetails = await _api.Call(s => s.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
+                var completeWithErrorReqDetails = await _api.Request(s => s.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
                 {
                     TechMessage = e.Message,
                     TechInfo = e.ToString()
-                })).GetDetailed();
+                })).GetDetailedAsync();
 
                 _reporter?.Report(completeWithErrorReqDetails);
             }
