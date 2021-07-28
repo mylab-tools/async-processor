@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using MyLab.AsyncProcessor.Sdk.DataModel;
-using MyLab.LogDsl;
+using MyLab.Log.Dsl;
 using MyLab.Mq;
 using MyLab.Mq.PubSub;
 
@@ -12,24 +12,13 @@ namespace MyLab.AsyncProcessor.Api.Tools
         private readonly IMqPublisher _mqPublisher;
         private readonly string _callbackQueue;
 
-        public DslLogger Log { get; set; }
+        public IDslLogger Log { get; set; }
 
         public CallbackReporter(IMqPublisher mqPublisher, string callbackQueue)
         {
             _mqPublisher = mqPublisher;
             _callbackQueue = callbackQueue;
         }
-
-        //public void SendStartProcessing(string requestId, string callbackRouting)
-        //{
-        //    SendCallbackMessage(
-        //        callbackRouting,
-        //        new ChangeStatusCallbackMessage
-        //    {
-        //        RequestId = requestId,
-        //        NewProcessStep = ProcessStep.Processing
-        //    });
-        //}
 
         public void SendCompletedWithResult(string requestId, string callbackRouting, byte[] resultBin, string mimeType)
         {
