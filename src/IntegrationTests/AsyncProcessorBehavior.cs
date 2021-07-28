@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
@@ -84,6 +85,54 @@ namespace IntegrationTests
                     {
                         Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
                         Assert.Equal("foo-10", m.ResultObjectJson);
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Dispose();
+                callback.incomingMq.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task ShouldProcessMessageWithLargeObjectResult()
+        {
+            //Arrange
+
+            var callback = CreateCallback();
+
+            try
+            {
+                var api = Prepare(callback.exchange.Name);
+
+                var requestContent = new TestRequest
+                {
+                    Command = "repeat-str",
+                    Value1 = Guid.NewGuid().ToString("N"),
+                    Value2 = 1000
+                };
+
+                var expected = string.Join(',', Enumerable.Repeat(requestContent.Value1, requestContent.Value2));
+
+                //Act
+
+                var reqId = await SendRequest(requestContent, api);
+                var status = await ProcessRequest(reqId, api);
+                var result = await GetResult(api, rApi => rApi.GetObjectResult<string>(reqId));
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.True(status.Successful);
+                Assert.Equal(expected, result);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                        Assert.Equal(expected, m.ResultObjectJson);
                     }
                 });
             }
