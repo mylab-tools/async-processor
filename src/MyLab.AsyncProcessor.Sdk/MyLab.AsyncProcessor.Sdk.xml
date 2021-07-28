@@ -231,6 +231,16 @@
             Processes request
             </summary>
         </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.ILostRequestEventHandler">
+            <summary>
+            Handles event when request not found
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.ILostRequestEventHandler.Handle(System.String)">
+            <summary>
+            Handles
+            </summary>
+        </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.Processor.InterruptConsumingException">
             <summary>
             Throw to interrupt message consuming

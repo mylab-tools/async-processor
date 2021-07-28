@@ -46,6 +46,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
                     })
             );
             services.AddSingleton<IAsyncProcessingLogic<TRequest>, TLogic>();
+            services.AddSingleton<ILostRequestEventHandler, LostRequestEventHandler>();
 
             return services;
         }

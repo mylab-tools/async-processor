@@ -1,5 +1,7 @@
 ﻿using System.Buffers;
+using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MyLab.AsyncProcessor.Api.Services;
@@ -82,13 +84,15 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [Consumes("application/json", "application/octet-stream")]
         public async Task<IActionResult> CompleteWithResult([FromRoute] string id)
         {
-            var content = await Request.BodyReader.ReadAsync();
+            using var reader = new StreamReader(Request.BodyReader.AsStream());
+            var content = await reader.ReadToEndAsync();
+
             var mimeType = Request.ContentType;
 
             if (mimeType == null)
                 return new UnsupportedMediaTypeResult();
 
-            await _logic.CompleteWithResultAsync(id, content.Buffer.ToArray(), mimeType);
+            await _logic.CompleteWithResultAsync(id, Encoding.UTF8.GetBytes(content), mimeType);
 
             return Ok();
         }

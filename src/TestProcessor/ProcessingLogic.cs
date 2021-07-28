@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
@@ -27,6 +28,8 @@ namespace TestProcessor
                     return op.SetBizStepAsync("foo-step");
                 case "interrupt":
                     throw new InterruptConsumingException();
+                case "repeat-str":
+                    return op.CompleteWithResultAsync(string.Join(',', Enumerable.Repeat(request.Value1, request.Value2)));
                 default: throw new IndexOutOfRangeException();
             }
         }

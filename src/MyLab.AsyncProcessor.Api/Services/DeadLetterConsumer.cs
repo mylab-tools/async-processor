@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyLab.AsyncProcessor.Sdk.DataModel;
-using MyLab.LogDsl;
+using MyLab.Log.Dsl;
 using MyLab.Mq;
 using MyLab.Mq.PubSub;
 
@@ -10,7 +10,7 @@ namespace MyLab.AsyncProcessor.Api.Services
     class DeadLetterConsumer : IMqConsumerLogic<QueueRequestMessage>
     {
         private readonly Logic _logic;
-        private readonly DslLogger _log;
+        private readonly IDslLogger _log;
 
         public DeadLetterConsumer(Logic logic, ILogger<DeadLetterConsumer> logger)
         {
