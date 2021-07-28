@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
@@ -58,7 +60,7 @@ namespace IntegrationTests
             return (queue, exchange);
         }
 
-        private (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) Prepare(string callbackExchangeName)
+        private (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) Prepare(string callbackExchangeName, ILostRequestEventHandler lostRequestEventHandler = null, int reqIdleTimeoutSec = 300)
         {
             var deadLetterExchange = CreateDeadLetterExchange();
             var deadLetterQueue = CreateQueue(null, "async-proc-test:dead-letter:");
@@ -66,15 +68,15 @@ namespace IntegrationTests
 
             var queue = CreateQueue(deadLetterExchange);
 
-            var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, callbackExchangeName, out var asyncProcApiInnerClient);
-            var processorApi = StartProcessor(queue, asyncProcApiInnerClient);
+            var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, callbackExchangeName, reqIdleTimeoutSec, out var asyncProcApiInnerClient);
+            var processorApi = StartProcessor(queue, asyncProcApiInnerClient, lostRequestEventHandler);
 
             return (asyncProcApi, processorApi);
         }
 
         private async Task<string> SendRequest(
             TestRequest request,
-            (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) api,
+            TestApiClient<IAsyncProcessorRequestsApi> api,
             string predefinedId = null)
         {
             var createRequest = new CreateRequest
@@ -84,23 +86,26 @@ namespace IntegrationTests
                 CallbackRouting = "foo-callback"
             };
 
-            var reqIdResp = await api.AsyncProcApi.Call(s => s.CreateAsync(createRequest));
+            var reqIdResp = await api.Call(s => s.CreateAsync(createRequest));
             return reqIdResp.ResponseContent;
         }
 
         private async Task<RequestStatus> ProcessRequest(
             string reqId,
-            (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) api)
+            TestApiClient<IAsyncProcessorRequestsApi> api)
         {
-            await api.ProcApi.Call(p => p.GetStatus());
+            //await api.ProcApi.Call(p => p.GetStatus());
 
-            TestCallDetails<RequestStatus> statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
+            TestCallDetails<RequestStatus> statusResp = await api.Call(s => s.GetStatusAsync(reqId));
             int tryCount = 0;
+            
+            if(statusResp.StatusCode == HttpStatusCode.NotFound)
+                throw new FileNotFoundException();
 
             while (statusResp.ResponseContent.Step != ProcessStep.Completed && tryCount++ < 10)
             {
                 await Task.Delay(200);
-                statusResp = await api.AsyncProcApi.Call(s => s.GetStatusAsync(reqId));
+                statusResp = await api.Call(s => s.GetStatusAsync(reqId));
             }
 
             if (statusResp.ResponseContent.Step != ProcessStep.Completed)
@@ -140,7 +145,8 @@ namespace IntegrationTests
             return exchangeFactory.CreateWithName(name);
         }
 
-        private TestApiClient<IProcessorApi> StartProcessor(MqQueue queue, HttpClient asyncProcApiClient)
+        private TestApiClient<IProcessorApi> StartProcessor(MqQueue queue, HttpClient asyncProcApiClient,
+            ILostRequestEventHandler lostRequestEventHandler)
         {
             var tc = _procApi.Start(srv =>
             {
@@ -161,6 +167,11 @@ namespace IntegrationTests
                     new SingleHttpClientFactory(asyncProcApiClient));
 
                 srv.AddSingleton<IWebCallReporterFactory>(new WebCallReporterFactory(_output));
+
+                if (lostRequestEventHandler != null)
+                {
+                    srv.AddSingleton(lostRequestEventHandler);
+                }
             });
 
 
@@ -173,6 +184,7 @@ namespace IntegrationTests
             MqQueue queue,
             MqQueue deadLetterQueue,
             string callbackExchangeName,
+            int reqIdleTimeoutSec,
             out HttpClient innerHttpClient)
         {
             var tc = _asyncProcTestApi.Start(out innerHttpClient, srv =>
@@ -195,7 +207,7 @@ namespace IntegrationTests
 
                 srv.Configure<AsyncProcessorOptions>(opt =>
                 {
-                    opt.MaxIdleTime = TimeSpan.FromMinutes(5);
+                    opt.MaxIdleTime = TimeSpan.FromSeconds(reqIdleTimeoutSec);
                     opt.QueueRoutingKey = queue.Name;
                     opt.MaxStoreTime = TimeSpan.FromMinutes(5);
                     opt.RedisKeyPrefix = "async-proc-test:" + Guid.NewGuid().ToString("N");
@@ -246,6 +258,16 @@ namespace IntegrationTests
                 {
                     Assert.True(false, $"Callback msg #'{i}' read timeout");
                 }
+            }
+        }
+
+        class TestLostRequestEventHandler : ILostRequestEventHandler
+        {
+            public string LastLostRequestId { get; set; }
+
+            public void Handle(string reqId)
+            {
+                LastLostRequestId = reqId;
             }
         }
     }

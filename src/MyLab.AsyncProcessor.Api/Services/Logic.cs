@@ -82,6 +82,7 @@ namespace MyLab.AsyncProcessor.Api.Services
             {
                 var callBackRoutingKey = GetCallbackRoutingKey(id);
                 await callBackRoutingKey.SetAsync(createRequest.CallbackRouting);
+                await callBackRoutingKey.ExpireAsync(_options.MaxIdleTime);
             }
         }
 
