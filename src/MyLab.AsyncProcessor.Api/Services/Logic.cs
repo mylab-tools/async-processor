@@ -7,8 +7,7 @@ using MyLab.AsyncProcessor.Api.Tools;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Log;
 using MyLab.Log.Dsl;
-using MyLab.Mq;
-using MyLab.Mq.PubSub;
+using MyLab.RabbitClient.Publishing;
 using MyLab.Redis;
 using MyLab.Redis.ObjectModel;
 
@@ -16,14 +15,14 @@ namespace MyLab.AsyncProcessor.Api.Services
 {
     public class Logic
     {
-        private readonly IMqPublisher _mqPublisher;
+        private readonly IRabbitPublisher _mqPublisher;
         private readonly IRedisService _redis;
         private readonly AsyncProcessorOptions _options;
         private readonly CallbackReporter _callbackReporter;
 
         public Logic(
-            IRedisService redis, 
-            IMqPublisher mqPublisher,
+            IRedisService redis,
+            IRabbitPublisher mqPublisher,
             IOptions<AsyncProcessorOptions> options,
             ILogger<Logic> logger = null)
         {
@@ -66,17 +65,11 @@ namespace MyLab.AsyncProcessor.Api.Services
                 Content = createRequest.Content
             };
 
-            var msg =new OutgoingMqEnvelop<QueueRequestMessage>
-            {
-                Message = new MqMessage<QueueRequestMessage>(msgPayload),
-                PublishTarget = new PublishTarget
-                {
-                    Exchange = _options.QueueExchange,
-                    Routing = createRequest.ProcRouting ?? _options.QueueRoutingKey
-                }
-            };
-
-            _mqPublisher.Publish(msg);
+            _mqPublisher.IntoExchange(
+                    _options.QueueExchange, 
+                    createRequest.ProcRouting ?? _options.QueueRoutingKey)
+                .SendJson(msgPayload)
+                .Publish();
 
             if(createRequest.CallbackRouting != null)
             {
