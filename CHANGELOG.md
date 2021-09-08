@@ -4,6 +4,12 @@
 
 Формат лога изменений базируется на [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Новое] 
+
+### Изменено 
+
+* переход `MyLab.Mq` -> `MyLab.RabbitClient` 
+
 ## [1.2.5] - 2021-07-28
 
 ### Добавлено
