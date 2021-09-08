@@ -25,10 +25,10 @@
 
   <ItemGroup>
     <PackageReference Include="MyLab.ApiClient" Version="3.7.21" />
-    <PackageReference Include="MyLab.Log" Version="3.1.5" />
+    <PackageReference Include="MyLab.Log" Version="3.1.8" />
     <PackageReference Include="MyLab.Log.Dsl" Version="3.1.2" />
-    <PackageReference Include="MyLab.Mq" Version="1.8.19" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="MyLab.RabbitClient" Version="2.1.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>

@@ -2,12 +2,11 @@
 using Microsoft.Extensions.Logging;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Log.Dsl;
-using MyLab.Mq;
-using MyLab.Mq.PubSub;
+using MyLab.RabbitClient.Consuming;
 
 namespace MyLab.AsyncProcessor.Api.Services
 {
-    class DeadLetterConsumer : IMqConsumerLogic<QueueRequestMessage>
+    class DeadLetterConsumer : RabbitConsumer<QueueRequestMessage>
     {
         private readonly Logic _logic;
         private readonly IDslLogger _log;
@@ -18,15 +17,15 @@ namespace MyLab.AsyncProcessor.Api.Services
             _log = logger.Dsl();
         }
 
-        public async Task Consume(MqMessage<QueueRequestMessage> message)
+        protected override async Task ConsumeMessageAsync(ConsumedMessage<QueueRequestMessage> message)
         {
-            await _logic.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
+            await _logic.CompleteWithErrorAsync(message.Content.Id, new ProcessingError
             {
-               TechMessage = "The request was placed in the dead letter"
+                TechMessage = "The request was placed in the dead letter"
             });
 
             _log.Warning("The request was placed in the dead letter")
-                .AndFactIs("request-id", message.Payload.Id)
+                .AndFactIs("request-id", message.Content.Id)
                 .Write();
         }
     }

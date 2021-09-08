@@ -2,8 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyLab.AsyncProcessor.Sdk.DataModel;
-using MyLab.Mq;
-using MyLab.Mq.PubSub;
+using MyLab.RabbitClient.Consuming;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
 {
@@ -35,20 +34,26 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             var configSection = config.GetSection(configSectionName);
             services.Configure<AsyncProcessorOptions>(configSection);
 
-            services.ConfigureMq(config);
-            services.AddMqConsuming(registrar =>
-                registrar.RegisterConsumerByOptions<MyLab.AsyncProcessor.Sdk.Processor.AsyncProcessorOptions>(
-                    opt =>
-                    {
-                        if(opt.Queue == null)
-                            throw new InvalidOperationException("Queue not specified in config");
-                        return new MqConsumer<QueueRequestMessage, AsyncProcMqConsumingLogic<TRequest>>(opt.Queue);
-                    })
-            );
+            services.ConfigureRabbitClient(config, "Mq");
+            services.AddRabbitConsumer<AsyncProcessorOptions, AsyncProcMqConsumingLogic<TRequest>>(opt => opt.Queue);
+
             services.AddSingleton<IAsyncProcessingLogic<TRequest>, TLogic>();
             services.AddSingleton<ILostRequestEventHandler, LostRequestEventHandler>();
 
             return services;
+        }
+    }
+
+    class ConsumerRegistrar : IRabbitConsumerRegistrar
+    {
+        public ConsumerRegistrar()
+        {
+            
+        }
+
+        public void Register(IRabbitConsumerRegistry registry, IServiceProvider serviceProvider)
+        {
+            throw new NotImplementedException();
         }
     }
 }

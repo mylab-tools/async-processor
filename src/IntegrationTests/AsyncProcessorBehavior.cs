@@ -45,8 +45,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -91,8 +91,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
 
             Assert.Equal(reqId, lostReqEventHandler.LastLostRequestId);
@@ -139,8 +139,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -187,8 +187,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -230,8 +230,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -275,8 +275,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -322,8 +322,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -370,8 +370,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -419,8 +419,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
 
@@ -461,8 +461,8 @@ namespace IntegrationTests
             }
             finally
             {
-                callback.exchange.Dispose();
-                callback.incomingMq.Dispose();
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
             }
         }
     }

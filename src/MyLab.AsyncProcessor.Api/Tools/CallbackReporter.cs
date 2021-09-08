@@ -2,19 +2,18 @@
 using System.Text;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Log.Dsl;
-using MyLab.Mq;
-using MyLab.Mq.PubSub;
+using MyLab.RabbitClient.Publishing;
 
 namespace MyLab.AsyncProcessor.Api.Tools
 {
     class CallbackReporter
     {
-        private readonly IMqPublisher _mqPublisher;
+        private readonly IRabbitPublisher _mqPublisher;
         private readonly string _callbackQueue;
 
         public IDslLogger Log { get; set; }
 
-        public CallbackReporter(IMqPublisher mqPublisher, string callbackQueue)
+        public CallbackReporter(IRabbitPublisher mqPublisher, string callbackQueue)
         {
             _mqPublisher = mqPublisher;
             _callbackQueue = callbackQueue;
@@ -90,11 +89,10 @@ namespace MyLab.AsyncProcessor.Api.Tools
         {
             try
             {
-                _mqPublisher.Publish(new OutgoingMqEnvelop<ChangeStatusCallbackMessage>
-                {
-                    PublishTarget = new PublishTarget { Exchange = _callbackQueue, Routing = callbackRouting },
-                    Message = new MqMessage<ChangeStatusCallbackMessage>(msg)
-                });
+                _mqPublisher.IntoExchange(_callbackQueue, callbackRouting)
+                    .SendJson(msg)
+                    .Publish();
+
             }
             catch (Exception e)
             {

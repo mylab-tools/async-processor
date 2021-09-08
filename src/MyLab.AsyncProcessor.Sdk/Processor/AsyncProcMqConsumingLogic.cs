@@ -6,13 +6,12 @@ using Microsoft.Extensions.Logging;
 using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Log.Dsl;
-using MyLab.Mq;
-using MyLab.Mq.PubSub;
+using MyLab.RabbitClient.Consuming;
 using Newtonsoft.Json;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
 {
-    class AsyncProcMqConsumingLogic<T> : IMqConsumerLogic<QueueRequestMessage>
+    class AsyncProcMqConsumingLogic<T> : RabbitConsumer<QueueRequestMessage>
     {
         private readonly IAsyncProcessingLogic<T> _logic;
         private readonly ILostRequestEventHandler _lostRequestEventHandler;
@@ -34,21 +33,21 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             _log = logger?.Dsl();
         }
 
-        public async Task Consume(MqMessage<QueueRequestMessage> message)
+        protected override async Task ConsumeMessageAsync(ConsumedMessage<QueueRequestMessage> message)
         {
-            var processingReqDetails = await _api.Request(s => s.MakeRequestProcessing(message.Payload.Id)).GetDetailedAsync(); 
+            var processingReqDetails = await _api.Request(s => s.MakeRequestProcessing(message.Content.Id)).GetDetailedAsync();
 
             _reporter?.Report(processingReqDetails);
 
             if (processingReqDetails.StatusCode == HttpStatusCode.NotFound)
             {
-                _lostRequestEventHandler.Handle(message.Payload.Id);
+                _lostRequestEventHandler.Handle(message.Content.Id);
                 return;
             }
 
-            var request = JsonConvert.DeserializeObject<T>(message.Payload.Content);
+            var request = JsonConvert.DeserializeObject<T>(message.Content.Content);
 
-            var procOperator = new ProcessingOperator(message.Payload.Id, _api)
+            var procOperator = new ProcessingOperator(message.Content.Id, _api)
             {
                 Reporter = _reporter
             };
@@ -63,7 +62,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             }
             catch (Exception e)
             {
-                var completeWithErrorReqDetails = await _api.Request(s => s.CompleteWithErrorAsync(message.Payload.Id, new ProcessingError
+                var completeWithErrorReqDetails = await _api.Request(s => s.CompleteWithErrorAsync(message.Content.Id, new ProcessingError
                 {
                     TechMessage = e.Message,
                     TechInfo = e.ToString()

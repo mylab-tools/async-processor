@@ -11,9 +11,9 @@ using MyLab.ApiClient.Test;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.AsyncProcessor.Sdk.Processor;
-using MyLab.Mq;
-using MyLab.Mq.Communication;
-using MyLab.Mq.MqObjects;
+using MyLab.RabbitClient;
+using MyLab.RabbitClient.Consuming;
+using MyLab.RabbitClient.Model;
 using MyLab.Redis;
 using MyLab.Syslog;
 using Newtonsoft.Json;
@@ -47,7 +47,7 @@ namespace IntegrationTests
             _output = output;
         }
 
-        (MqQueue incomingMq, MqExchange exchange) CreateCallback()
+        (RabbitQueue incomingMq, RabbitExchange exchange) CreateCallback()
         {
             string exchName = "async-proc-test:callback:" + Guid.NewGuid().ToString("N");
             var exchange = TestTools.ExchangeFactory(autoDelete:false).CreateWithName(exchName);
@@ -128,7 +128,7 @@ namespace IntegrationTests
             return JsonConvert.SerializeObject(request);
         }
 
-        private MqQueue CreateQueue(MqExchange deadLetterExchange, string prefix = null)
+        private RabbitQueue CreateQueue(RabbitExchange deadLetterExchange, string prefix = null)
         {
             var queueFactory = TestTools.QueueFactory();
             queueFactory.DeadLetterExchange = deadLetterExchange?.Name;
@@ -137,20 +137,20 @@ namespace IntegrationTests
             return queueFactory.CreateWithName(name);
         }
 
-        private MqExchange CreateDeadLetterExchange()
+        private RabbitExchange CreateDeadLetterExchange()
         {
-            var exchangeFactory = TestTools.ExchangeFactory(MqExchangeType.Fanout);
+            var exchangeFactory = TestTools.ExchangeFactory(RabbitExchangeType.Fanout);
 
             string name = "async-proc-test:dead-letter:" + Guid.NewGuid().ToString("N") + ":dead-letter";
             return exchangeFactory.CreateWithName(name);
         }
 
-        private TestApiClient<IProcessorApi> StartProcessor(MqQueue queue, HttpClient asyncProcApiClient,
+        private TestApiClient<IProcessorApi> StartProcessor(RabbitQueue queue, HttpClient asyncProcApiClient,
             ILostRequestEventHandler lostRequestEventHandler)
         {
             var tc = _procApi.Start(srv =>
             {
-                srv.Configure<MqOptions>(opt =>
+                srv.Configure<RabbitOptions>(opt =>
                 {
                     opt.Host = TestTools.MqOptions.Host;
                     opt.Port = TestTools.MqOptions.Port;
@@ -181,8 +181,8 @@ namespace IntegrationTests
         }
 
         private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(
-            MqQueue queue,
-            MqQueue deadLetterQueue,
+            RabbitQueue queue,
+            RabbitQueue deadLetterQueue,
             string callbackExchangeName,
             int reqIdleTimeoutSec,
             out HttpClient innerHttpClient)
@@ -195,7 +195,7 @@ namespace IntegrationTests
                     opt.RemotePort = 123456;
                 });
 
-                srv.Configure<MqOptions>(opt =>
+                srv.Configure<RabbitOptions>(opt =>
                 {
                     opt.Host = TestTools.MqOptions.Host;
                     opt.Port = TestTools.MqOptions.Port;
@@ -236,23 +236,21 @@ namespace IntegrationTests
             }
         }
 
-        async Task AssertCallback(MqQueue callbackQueue, Action<ChangeStatusCallbackMessage>[] asserts)
+        async Task AssertCallback(RabbitQueue callbackQueue, Action<ChangeStatusCallbackMessage>[] asserts)
         {
             await Task.Delay(500);
 
             for (int i = 0; i < asserts.Length; i++)
             {
                 var assert = asserts[i];
-                MqMessage<ChangeStatusCallbackMessage> msg;
 
                 try
                 {
                     var rm = callbackQueue.Listen<ChangeStatusCallbackMessage>(TimeSpan.FromSeconds(5));
-                    rm.Ack();
+                    
+                    Assert.NotNull(rm);
 
-                    Assert.NotNull(rm.Message);
-
-                    assert(rm.Message.Payload);
+                    assert(rm.Content);
                 }
                 catch (TimeoutException)
                 {

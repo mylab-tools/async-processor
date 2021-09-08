@@ -1,12 +1,12 @@
-﻿using MyLab.Mq;
-using MyLab.Mq.Communication;
-using MyLab.Mq.MqObjects;
+﻿using MyLab.RabbitClient;
+using MyLab.RabbitClient.Connection;
+using MyLab.RabbitClient.Model;
 
 namespace IntegrationTests
 {
     static class TestTools
     {
-        public static readonly MqOptions MqOptions = new MqOptions
+        public static readonly RabbitOptions MqOptions = new RabbitOptions
         {
             Host = "localhost",
             Port = 10202,
@@ -14,22 +14,22 @@ namespace IntegrationTests
             Password = "guest"
         };
 
-        public static MqExchangeFactory ExchangeFactory(MqExchangeType type = MqExchangeType.Direct,
+        public static RabbitExchangeFactory ExchangeFactory(RabbitExchangeType type = RabbitExchangeType.Direct,
             bool autoDelete = true)
         {
-            return new MqExchangeFactory(
+            return new RabbitExchangeFactory(
                 type,
-                new MqChannelProvider(new DefaultMqConnectionProvider(MqOptions)
+                new RabbitChannelProvider(new RabbitConnectionProvider(MqOptions)
                 ))
             {
                 AutoDelete = autoDelete
             };
         }
 
-        public static MqQueueFactory QueueFactory(bool autoDelete = true)
+        public static RabbitQueueFactory QueueFactory(bool autoDelete = true)
         {
-            return new MqQueueFactory(
-                new MqChannelProvider(new DefaultMqConnectionProvider(MqOptions)
+            return new RabbitQueueFactory(
+                new RabbitChannelProvider(new RabbitConnectionProvider(MqOptions)
                 ))
             {
                 AutoDelete = autoDelete
