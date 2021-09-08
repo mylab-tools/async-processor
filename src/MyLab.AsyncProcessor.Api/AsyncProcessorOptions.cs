@@ -13,14 +13,14 @@ namespace MyLab.AsyncProcessor.Api
         public string RedisKeyPrefix { get; set; }
 
         /// <summary>
-        /// When that time is elapsed and was no event then request will be deleted . REQUIRED.
+        /// Period for request processing else request will be deleted.
         /// </summary>
-        public TimeSpan MaxIdleTime { get; set; }
-
+        public TimeSpan ProcessingTimeout { get; set; } = TimeSpan.FromMinutes(1);
+        
         /// <summary>
-        /// When that time is elapsed after request completed then request will be deleted. REQUIRED.
+        /// Request lifetime after processing.
         /// </summary>
-        public TimeSpan MaxStoreTime { get; set; }
+        public TimeSpan RestTimeout { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
         /// Gets queue exchange name to publish requests. OPTIONAL.

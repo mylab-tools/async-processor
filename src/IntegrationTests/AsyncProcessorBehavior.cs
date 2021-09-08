@@ -51,25 +51,23 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldSkipProcessingIfRequestNotFound()
+        public async Task ShouldProcessingBeFlexibleForRequestExpiration()
         {
             //Arrange
 
             var callback = CreateCallback();
-            var lostReqEventHandler = new TestLostRequestEventHandler();
             string reqId;
+            RequestStatus reqStatResult;
 
             try
             {
-                //var api = Prepare(callback.exchange.Name, lostReqEventHandler, 1);
-
                 var deadLetterExchange = CreateDeadLetterExchange();
                 var deadLetterQueue = CreateQueue(null, "async-proc-test:dead-letter:");
                 deadLetterQueue.BindToExchange(deadLetterExchange);
 
                 var queue = CreateQueue(deadLetterExchange);
 
-                var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, callback.exchange.Name, 1, out var asyncProcApiInnerClient);
+                var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, callback.exchange.Name, 3, out var asyncProcApiInnerClient);
                 
                 var requestContent = new TestRequest
                 {
@@ -84,10 +82,9 @@ namespace IntegrationTests
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
-                StartProcessor(queue, asyncProcApiInnerClient, lostReqEventHandler);
+                StartProcessor(queue, asyncProcApiInnerClient);
 
-                //Act & Assert
-                await Assert.ThrowsAsync<FileNotFoundException>(() => ProcessRequest(reqId, asyncProcApi));
+                reqStatResult = await ProcessRequestAsync(reqId, asyncProcApi);
             }
             finally
             {
@@ -95,7 +92,55 @@ namespace IntegrationTests
                 callback.incomingMq.Remove();
             }
 
-            Assert.Equal(reqId, lostReqEventHandler.LastLostRequestId);
+            Assert.NotNull(reqStatResult);
+            Assert.True(reqStatResult.Successful);
+        }
+
+        [Fact]
+        public async Task ShouldExpireRequest()
+        {
+            //Arrange
+
+            var callback = CreateCallback();
+            var testConsumer = new TestConsumer();
+            var testLostRequestHandler = new TestLostRequestEventHandler();
+            string reqId;
+
+            try
+            {
+                var deadLetterExchange = CreateDeadLetterExchange();
+                var deadLetterQueue = CreateQueue(null, "async-proc-test:dead-letter:");
+                deadLetterQueue.BindToExchange(deadLetterExchange);
+
+                var queue = CreateQueue(deadLetterExchange);
+
+                var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, callback.exchange.Name, 1, out var asyncProcApiInnerClient);
+
+                var requestContent = new TestRequest
+                {
+                    Value1 = "foo",
+                    Value2 = 10,
+                    Command = "concat"
+                };
+
+                //Act
+
+                reqId = await SendRequest(requestContent, asyncProcApi);
+
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                StartProcessor(queue, asyncProcApiInnerClient, testLostRequestHandler, testConsumer);
+
+                //Act & Assert
+                await Assert.ThrowsAsync<FileNotFoundException>(() => ProcessRequestAsync(reqId, asyncProcApi));
+            }
+            finally
+            {
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
+            }
+
+            Assert.Null(testConsumer.LastMsg);
         }
 
         [Fact]
@@ -119,7 +164,7 @@ namespace IntegrationTests
                 //Act
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
-                var status = await ProcessRequest(reqId, api.AsyncProcApi);
+                var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
                 var result = await GetResult(api, rApi => rApi.GetObjectResult<string>(reqId));
 
                 //Assert
@@ -167,7 +212,7 @@ namespace IntegrationTests
                 //Act
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
-                var status = await ProcessRequest(reqId, api.AsyncProcApi);
+                var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
                 var result = await GetResult(api, rApi => rApi.GetObjectResult<string>(reqId));
 
                 //Assert
@@ -210,7 +255,7 @@ namespace IntegrationTests
                 //Act
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
-                var status = await ProcessRequest(reqId, api.AsyncProcApi);
+                var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
                 var result = await GetResult(api, rApi => rApi.GetObjectResult<int>(reqId));
 
                 //Assert
@@ -255,7 +300,7 @@ namespace IntegrationTests
                 //Act
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
-                var status = await ProcessRequest(reqId, api.AsyncProcApi);
+                var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
                 var result = await GetResult(api, rApi => rApi.GetBinResult(reqId));
 
                 //Assert
@@ -297,7 +342,7 @@ namespace IntegrationTests
                 //Act
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
-                var status = await ProcessRequest(reqId, api.AsyncProcApi);
+                var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
 
                 //Assert
                 Assert.Equal(ProcessStep.Completed, status.Step);
@@ -344,7 +389,7 @@ namespace IntegrationTests
                 //Act
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
-                var status = await ProcessRequest(reqId, api.AsyncProcApi);
+                var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
 
                 //Assert
                 Assert.Equal(ProcessStep.Completed, status.Step);
@@ -393,7 +438,7 @@ namespace IntegrationTests
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
 
-                RequestStatus status = await ProcessRequest(reqId, api.AsyncProcApi);
+                RequestStatus status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
 
                 //Assert
                 Assert.Equal(ProcessStep.Completed, status.Step);

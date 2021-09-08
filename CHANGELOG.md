@@ -10,6 +10,14 @@
 
 * переход `MyLab.Mq` -> `MyLab.RabbitClient` 
 
+### Удалено
+
+* настройки времени жизни запроса `MaxStoreTime` и `MaxIdleTime`
+
+### Добавлено
+
+* настройки времени жизни запроса `RestTimeout` и `ProcessingTimeout`
+
 ## [1.2.5] - 2021-07-28
 
 ### Добавлено

@@ -141,8 +141,8 @@ docker pull ozzyext/mylab-async-proc-api
 ```json
 {
   "RedisKeyPrefix": "myorder-async-proc:requests:",
-  "MaxIdleTime": "01:00",
-  "MaxStoreTime": "1",
+  "ProcessingTimeout": "01:00",
+  "RestTimeout": "1",
   "QueueExchange": "myorder:proc-exchange",
   "QueueRoutingKey": "myorder:proc-queue",
   "DeadLetter": "myorder:dead-letter",
@@ -153,8 +153,8 @@ docker pull ozzyext/mylab-async-proc-api
 , где:
 
 * `RedisKeyPrefix` - префикс для ключей в Redis, в которых будет хранится состояние обработки запроса;
-* `MaxIdleTime` - период жизни запроса после последней активности. В формате `TimeSpan`;
-* `MaxStoreTime` - период жизни запроса после перехода в конечное состояние `Completed`. В формате `TimeSpan`; 
+* `ProcessingTimeout` - период жизни запроса в одижании обработки. Ограничивает время жизни ключей в `Redis` и сообщения в `RabbitMQ`. В формате `TimeSpan`;
+* `RestTimeout` - период жизни запроса после перехода в конечное состояние `Completed` (после обработки). Ограничивает время жизни ключей в `Redis`  В формате `TimeSpan`; 
 * `QueueExchange` - обменник`RabbitMQ`, в который будут подаваться сообщения для `BizProc`. Может быть не указан, если публикация должна осуществляться сразу в очередь; 
 * `QueueRoutingKey` - очередь для публикации, если не указан `QueueExchange` или ключ маршрутизации (`routing key`) по умолчанию. Опциональный параметр; 
 * `DeadLetter` - определяет имя обменника, куда будут направлены сообщения из основной очереди, если произойдут сбои обработки. Опциональный параметр;

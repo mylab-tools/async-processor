@@ -90,25 +90,27 @@ namespace IntegrationTests
             return reqIdResp.ResponseContent;
         }
 
-        private async Task<RequestStatus> ProcessRequest(
+        private async Task<RequestStatus> ProcessRequestAsync(
             string reqId,
             TestApiClient<IAsyncProcessorRequestsApi> api)
         {
-            //await api.ProcApi.Call(p => p.GetStatus());
-
-            TestCallDetails<RequestStatus> statusResp = await api.Call(s => s.GetStatusAsync(reqId));
-            int tryCount = 0;
+            TestCallDetails<RequestStatus> statusResp = null;
             
-            if(statusResp.StatusCode == HttpStatusCode.NotFound)
-                throw new FileNotFoundException();
-
-            while (statusResp.ResponseContent.Step != ProcessStep.Completed && tryCount++ < 10)
+            for (int i = 0; i < 10; i++)
             {
-                await Task.Delay(200);
+                if (i != 0)
+                    await Task.Delay(200);
+
                 statusResp = await api.Call(s => s.GetStatusAsync(reqId));
+
+                if (statusResp.StatusCode == HttpStatusCode.NotFound)
+                    throw new FileNotFoundException();
+
+                if (statusResp.ResponseContent.Step == ProcessStep.Completed)
+                    break;
             }
 
-            if (statusResp.ResponseContent.Step != ProcessStep.Completed)
+            if (statusResp == null || statusResp.ResponseContent.Step != ProcessStep.Completed)
                 throw new TimeoutException("Waiting for response timeout");
 
             return statusResp.ResponseContent;
@@ -146,7 +148,8 @@ namespace IntegrationTests
         }
 
         private TestApiClient<IProcessorApi> StartProcessor(RabbitQueue queue, HttpClient asyncProcApiClient,
-            ILostRequestEventHandler lostRequestEventHandler)
+            ILostRequestEventHandler lostRequestEventHandler = null,
+            IRabbitConsumer consumer = null)
         {
             var tc = _procApi.Start(srv =>
             {
@@ -172,6 +175,11 @@ namespace IntegrationTests
                 {
                     srv.AddSingleton(lostRequestEventHandler);
                 }
+
+                if (consumer != null)
+                {
+                    srv.AddRabbitConsumer(queue.Name, consumer);
+                }
             });
 
 
@@ -184,7 +192,7 @@ namespace IntegrationTests
             RabbitQueue queue,
             RabbitQueue deadLetterQueue,
             string callbackExchangeName,
-            int reqIdleTimeoutSec,
+            int reqProcTimeoutSec,
             out HttpClient innerHttpClient)
         {
             var tc = _asyncProcTestApi.Start(out innerHttpClient, srv =>
@@ -207,9 +215,9 @@ namespace IntegrationTests
 
                 srv.Configure<AsyncProcessorOptions>(opt =>
                 {
-                    opt.MaxIdleTime = TimeSpan.FromSeconds(reqIdleTimeoutSec);
+                    opt.ProcessingTimeout = TimeSpan.FromSeconds(reqProcTimeoutSec);
                     opt.QueueRoutingKey = queue.Name;
-                    opt.MaxStoreTime = TimeSpan.FromMinutes(5);
+                    opt.RestTimeout = TimeSpan.FromMinutes(5);
                     opt.RedisKeyPrefix = "async-proc-test:" + Guid.NewGuid().ToString("N");
                     opt.DeadLetter = deadLetterQueue.Name;
                     opt.Callback = callbackExchangeName;
@@ -266,6 +274,17 @@ namespace IntegrationTests
             public void Handle(string reqId)
             {
                 LastLostRequestId = reqId;
+            }
+        }
+
+        class TestConsumer : RabbitConsumer<TestRequest>
+        {
+            public TestRequest LastMsg { get; private set; }
+            protected override Task ConsumeMessageAsync(ConsumedMessage<TestRequest> consumedMessage)
+            {
+                LastMsg = consumedMessage.Content;
+
+                return Task.CompletedTask;
             }
         }
     }
