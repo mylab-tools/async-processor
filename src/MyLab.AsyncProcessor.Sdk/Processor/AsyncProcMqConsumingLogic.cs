@@ -45,7 +45,9 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
                 return;
             }
 
-            var request = JsonConvert.DeserializeObject<T>(message.Content.Content);
+            var requestContent = JsonConvert.DeserializeObject<T>(message.Content.Content);
+
+            var request = new AsyncProcRequest<T>(message.Content.Id, requestContent, message.Content.Headers);
 
             var procOperator = new ProcessingOperator(message.Content.Id, _api)
             {

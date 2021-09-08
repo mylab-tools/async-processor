@@ -6,11 +6,11 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
     /// Performs request processing
     /// </summary>
     /// <typeparam name="T">Request type</typeparam>
-    public interface IAsyncProcessingLogic<in T>
+    public interface IAsyncProcessingLogic<T>
     {
         /// <summary>
         /// Processes request
         /// </summary>
-        Task ProcessAsync(T request, IProcessingOperator op);
+        Task ProcessAsync(AsyncProcRequest<T> request, IProcessingOperator op);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.AsyncProcessor.Api.Tools;
@@ -57,13 +59,22 @@ namespace MyLab.AsyncProcessor.Api.Services
             return resId;
         }
 
-        public async Task SendRequestToProcessorAsync(string id, CreateRequest createRequest)
+        public async Task SendRequestToProcessorAsync(string id, CreateRequest createRequest, HttpRequest httpRequest)
         {
             var msgPayload = new QueueRequestMessage
             {
                 Id = id,
                 Content = createRequest.Content
             };
+
+            if (httpRequest.Headers != null)
+            {
+                msgPayload.Headers = httpRequest.Headers                
+                    .ToDictionary(                    
+                            h => h.Key,                     
+                            h=> h.Value.ToString()
+                        );
+            }
 
             _mqPublisher.IntoExchange(
                     _options.QueueExchange, 

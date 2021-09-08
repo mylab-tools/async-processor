@@ -25,7 +25,7 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         public async Task<IActionResult> Create(CreateRequest request)
         {
             var id = await _logic.RegisterNewRequestAsync(request.RequestId);
-            await _logic.SendRequestToProcessorAsync(id, request);
+            await _logic.SendRequestToProcessorAsync(id, request, Request);
 
             return Ok(id);
         }

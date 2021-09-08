@@ -51,7 +51,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldProcessingBeFlexibleForRequestExpiration()
+        public async Task ShouldProcessingIfRequestNotExpired()
         {
             //Arrange
 
@@ -102,7 +102,7 @@ namespace IntegrationTests
             //Arrange
 
             var callback = CreateCallback();
-            var testConsumer = new TestConsumer();
+            var testProcLogic = new TestProcessingLogic();
             var testLostRequestHandler = new TestLostRequestEventHandler();
             string reqId;
 
@@ -129,7 +129,7 @@ namespace IntegrationTests
 
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
-                StartProcessor(queue, asyncProcApiInnerClient, testLostRequestHandler, testConsumer);
+                StartProcessor(queue, asyncProcApiInnerClient, testLostRequestHandler, testProcLogic);
 
                 //Act & Assert
                 await Assert.ThrowsAsync<FileNotFoundException>(() => ProcessRequestAsync(reqId, asyncProcApi));
@@ -140,7 +140,54 @@ namespace IntegrationTests
                 callback.incomingMq.Remove();
             }
 
-            Assert.Null(testConsumer.LastMsg);
+            Assert.Null(testProcLogic.LastRequest);
+        }
+
+        [Fact]
+        public async Task ShouldAddInitialHeadersToRequest()
+        {
+            //Arrange
+
+            var callback = CreateCallback();
+            var testProcLogic = new TestProcessingLogic();
+
+            try
+            {
+                var deadLetterExchange = CreateDeadLetterExchange();
+                var deadLetterQueue = CreateQueue(null, "async-proc-test:dead-letter:");
+                deadLetterQueue.BindToExchange(deadLetterExchange);
+
+                var queue = CreateQueue(deadLetterExchange);
+
+                var asyncProcApi = StartAsyncProcApi(queue, deadLetterQueue, callback.exchange.Name, 3, out var asyncProcApiInnerClient);
+
+                var requestContent = new TestRequest
+                {
+                    Value1 = "foo",
+                    Value2 = 10,
+                    Command = "concat"
+                };
+
+                //Act
+
+                var reqId = await SendRequest(requestContent, asyncProcApi);
+
+                StartProcessor(queue, asyncProcApiInnerClient, processorLogic: testProcLogic);
+
+                await Assert.ThrowsAsync<TimeoutException>(() => ProcessRequestAsync(reqId, asyncProcApi));
+            }
+            finally
+            {
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
+            }
+
+            var headers = testProcLogic?.LastRequest?.Headers;
+
+            Assert.NotNull(headers);
+            Assert.True(headers.ContainsKey("Content-Length"));
+            Assert.Equal("128", headers["Content-Length"]);
+            
         }
 
         [Fact]

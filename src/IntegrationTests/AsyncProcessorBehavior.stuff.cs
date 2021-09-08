@@ -149,7 +149,7 @@ namespace IntegrationTests
 
         private TestApiClient<IProcessorApi> StartProcessor(RabbitQueue queue, HttpClient asyncProcApiClient,
             ILostRequestEventHandler lostRequestEventHandler = null,
-            IRabbitConsumer consumer = null)
+            IAsyncProcessingLogic<TestRequest> processorLogic = null)
         {
             var tc = _procApi.Start(srv =>
             {
@@ -176,9 +176,9 @@ namespace IntegrationTests
                     srv.AddSingleton(lostRequestEventHandler);
                 }
 
-                if (consumer != null)
+                if (processorLogic != null)
                 {
-                    srv.AddRabbitConsumer(queue.Name, consumer);
+                    srv.AddSingleton<IAsyncProcessingLogic<TestRequest>>(processorLogic);
                 }
             });
 
@@ -277,12 +277,23 @@ namespace IntegrationTests
             }
         }
 
-        class TestConsumer : RabbitConsumer<TestRequest>
+        //class TestConsumer : RabbitConsumer<TestRequest>
+        //{
+        //    public TestRequest LastMsg { get; private set; }
+        //    protected override Task ConsumeMessageAsync(ConsumedMessage<TestRequest> consumedMessage)
+        //    {
+        //        LastMsg = consumedMessage.Content;
+
+        //        return Task.CompletedTask;
+        //    }
+        //}
+
+        class TestProcessingLogic : IAsyncProcessingLogic<TestRequest>
         {
-            public TestRequest LastMsg { get; private set; }
-            protected override Task ConsumeMessageAsync(ConsumedMessage<TestRequest> consumedMessage)
+            public AsyncProcRequest<TestRequest> LastRequest { get; set; }
+            public Task ProcessAsync(AsyncProcRequest<TestRequest> request, IProcessingOperator op)
             {
-                LastMsg = consumedMessage.Content;
+                LastRequest = request;
 
                 return Task.CompletedTask;
             }
