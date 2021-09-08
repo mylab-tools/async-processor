@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>1.2.2</Version>
-    <AssemblyVersion>1.1.2.0402</AssemblyVersion>
-    <FileVersion>1.2.0.0402</FileVersion>
+    <Version>1.3.5</Version>
+    <AssemblyVersion>1.3.5.0909</AssemblyVersion>
+    <FileVersion>1.3.5.0909</FileVersion>
+    <PackageIcon>tools.png</PackageIcon>
+    <PackageIconUrl />
   </PropertyGroup>
 
   <ItemGroup>
