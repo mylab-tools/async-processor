@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MyLab.StatusProvider" Version="1.5.9" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\IntegrationTest.Share\IntegrationTest.Share.csproj" />
     <ProjectReference Include="..\MyLab.AsyncProcessor.Sdk\MyLab.AsyncProcessor.Sdk.csproj" />
   </ItemGroup>

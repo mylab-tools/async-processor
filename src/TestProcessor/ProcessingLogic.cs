@@ -10,16 +10,16 @@ namespace TestProcessor
 {
     class ProcessingLogic : IAsyncProcessingLogic<TestRequest>
     {
-        public Task ProcessAsync(TestRequest request, IProcessingOperator op)
+        public Task ProcessAsync(AsyncProcRequest<TestRequest> request, IProcessingOperator op)
         {
-            switch (request.Command)
+            switch (request.Content.Command)
             {
                 case "concat":
-                    return op.CompleteWithResultAsync(request.Value1 + "-" + request.Value2);
+                    return op.CompleteWithResultAsync(request.Content.Value1 + "-" + request.Content.Value2);
                 case "incr-int":
-                    return op.CompleteWithResultAsync(request.Value2+1);
+                    return op.CompleteWithResultAsync(request.Content.Value2+1);
                 case "str-to-bin":
-                    return op.CompleteWithResultAsync(Encoding.UTF8.GetBytes(request.Value1));
+                    return op.CompleteWithResultAsync(Encoding.UTF8.GetBytes(request.Content.Value1));
                 case "unhandled-exception":
                     throw new InvalidOperationException("foo");
                 case "reported-error":
@@ -29,7 +29,7 @@ namespace TestProcessor
                 case "interrupt":
                     throw new InterruptConsumingException();
                 case "repeat-str":
-                    return op.CompleteWithResultAsync(string.Join(',', Enumerable.Repeat(request.Value1, request.Value2)));
+                    return op.CompleteWithResultAsync(string.Join(',', Enumerable.Repeat(request.Content.Value1, request.Content.Value2)));
                 default: throw new IndexOutOfRangeException();
             }
         }

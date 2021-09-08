@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.AsyncProcessor.Api.Tools;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Log;
 using MyLab.Log.Dsl;
-using MyLab.Mq;
-using MyLab.Mq.PubSub;
+using MyLab.RabbitClient.Publishing;
 using MyLab.Redis;
 using MyLab.Redis.ObjectModel;
 
@@ -16,14 +17,14 @@ namespace MyLab.AsyncProcessor.Api.Services
 {
     public class Logic
     {
-        private readonly IMqPublisher _mqPublisher;
+        private readonly IRabbitPublisher _mqPublisher;
         private readonly IRedisService _redis;
         private readonly AsyncProcessorOptions _options;
         private readonly CallbackReporter _callbackReporter;
 
         public Logic(
-            IRedisService redis, 
-            IMqPublisher mqPublisher,
+            IRedisService redis,
+            IRabbitPublisher mqPublisher,
             IOptions<AsyncProcessorOptions> options,
             ILogger<Logic> logger = null)
         {
@@ -53,12 +54,12 @@ namespace MyLab.AsyncProcessor.Api.Services
             };
 
             await initialStatus.WriteToRedis(statusKey);
-            await statusKey.ExpireAsync(_options.MaxIdleTime);
+            await statusKey.ExpireAsync(_options.ProcessingTimeout);
 
             return resId;
         }
 
-        public async Task SendRequestToProcessorAsync(string id, CreateRequest createRequest)
+        public async Task SendRequestToProcessorAsync(string id, CreateRequest createRequest, HttpRequest httpRequest)
         {
             var msgPayload = new QueueRequestMessage
             {
@@ -66,23 +67,27 @@ namespace MyLab.AsyncProcessor.Api.Services
                 Content = createRequest.Content
             };
 
-            var msg =new OutgoingMqEnvelop<QueueRequestMessage>
+            if (httpRequest.Headers != null)
             {
-                Message = new MqMessage<QueueRequestMessage>(msgPayload),
-                PublishTarget = new PublishTarget
-                {
-                    Exchange = _options.QueueExchange,
-                    Routing = createRequest.ProcRouting ?? _options.QueueRoutingKey
-                }
-            };
+                msgPayload.Headers = httpRequest.Headers                
+                    .ToDictionary(                    
+                            h => h.Key,                     
+                            h=> h.Value.ToString()
+                        );
+            }
 
-            _mqPublisher.Publish(msg);
+            _mqPublisher.IntoExchange(
+                    _options.QueueExchange, 
+                    createRequest.ProcRouting ?? _options.QueueRoutingKey)
+                .SendJson(msgPayload)
+                .AndProperty(p => p.Expiration = ((long)_options.ProcessingTimeout.TotalMilliseconds).ToString())
+                .Publish();
 
             if(createRequest.CallbackRouting != null)
             {
                 var callBackRoutingKey = GetCallbackRoutingKey(id);
                 await callBackRoutingKey.SetAsync(createRequest.CallbackRouting);
-                await callBackRoutingKey.ExpireAsync(_options.MaxIdleTime);
+                await callBackRoutingKey.ExpireAsync(_options.ProcessingTimeout);
             }
         }
 
@@ -98,7 +103,6 @@ namespace MyLab.AsyncProcessor.Api.Services
             var key = await GetStatusKeyAsync(id);
 
             await RequestStatusTools.SaveBizStep(bizStep, key);
-            await UpdateIdleExpiration(id);
 
             var callbackRouting = await GetCallbackRoutingAsync(id);
             _callbackReporter?.SendBizStepChanged(id, callbackRouting, bizStep);
@@ -120,7 +124,6 @@ namespace MyLab.AsyncProcessor.Api.Services
             var key = await GetStatusKeyAsync(id);
 
             await RequestStatusTools.SetStep(processStep, key);
-            await UpdateIdleExpiration(id);
 
             var callbackRouting = await GetCallbackRoutingAsync(id);
             _callbackReporter?.SendRequestStep(id, callbackRouting, processStep);
@@ -151,7 +154,7 @@ namespace MyLab.AsyncProcessor.Api.Services
             var strContent = ContentToString(content, mimeType);
             await resultKey.SetAsync(strContent);
 
-            await UpdateIdleExpiration(id);
+            await UpdateStoreExpiration(id);
 
             var callbackRouting = await GetCallbackRoutingAsync(id);
             _callbackReporter?.SendCompletedWithResult(id, callbackRouting, content, mimeType);
@@ -213,26 +216,15 @@ namespace MyLab.AsyncProcessor.Api.Services
             return val.HasValue ? (string)val : null;
         }
 
-        async Task UpdateIdleExpiration(string id)
-        {
-            var statusKey = await GetStatusKeyAsync(id);
-            var callbackKey = GetCallbackRoutingKey(id);
-            var resultKey = GetResultKey(id);
-
-            await statusKey.ExpireAsync(_options.MaxIdleTime);
-            await callbackKey.ExpireAsync(_options.MaxIdleTime);
-            await resultKey.ExpireAsync(_options.MaxIdleTime);
-        }
-
         async Task UpdateStoreExpiration(string id)
         {
             var statusKey = await GetStatusKeyAsync(id);
             var callbackKey = GetCallbackRoutingKey(id);
             var resultKey = GetResultKey(id);
 
-            await statusKey.ExpireAsync(_options.MaxStoreTime);
-            await callbackKey.ExpireAsync(_options.MaxStoreTime);
-            await resultKey.ExpireAsync(_options.MaxStoreTime);
+            await statusKey.ExpireAsync(_options.RestTimeout);
+            await callbackKey.ExpireAsync(_options.RestTimeout);
+            await resultKey.ExpireAsync(_options.RestTimeout);
         }
     }
 }

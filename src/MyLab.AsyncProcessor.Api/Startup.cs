@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using MyLab.AsyncProcessor.Api.Services;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.HttpMetrics;
-using MyLab.Mq.PubSub;
 using MyLab.Redis;
 using MyLab.StatusProvider;
 using MyLab.Syslog;
@@ -36,17 +35,12 @@ namespace MyLab.AsyncProcessor.Api
             services.AddUrlBasedHttpMetrics();
             services.AddAppStatusProviding();
             services.AddRedisService(Configuration);
-            services.AddMqPublisher();
+
+            services.AddRabbitPublisher()
+                .AddRabbitConsumer<AsyncProcessorOptions, DeadLetterConsumer>(opt => opt.DeadLetter)
+                .ConfigureRabbitClient(Configuration, "Mq");
             
             services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
-            services.ConfigureMq(Configuration);
-
-            services.AddMqConsuming(registrar =>
-            {
-                registrar.RegisterConsumerByOptions<AsyncProcessorOptions, string>(
-                    opt => opt.DeadLetter,
-                    queue => new MqConsumer<QueueRequestMessage, DeadLetterConsumer>(queue));
-            });
 
             services.Configure<AsyncProcessorOptions>(Configuration.GetSection("AsyncProc"));
 

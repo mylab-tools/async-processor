@@ -104,6 +104,11 @@
             Request content
             </summary>
         </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage.Headers">
+            <summary>
+            Contains headers from initial http request
+            </summary>
+        </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.ExceptionExtensions">
             <summary>
             Extensions for <see cref="T:System.Exception"/>
@@ -220,13 +225,39 @@
             <param name="config">application configuration</param>
             <param name="configSectionName">configuration section name. <see cref="F:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcIntegration.DefaultConfigSection"/> by default</param>
         </member>
+        <member name="T:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1">
+            <summary>
+            Represent request for async processing
+            </summary>
+            <typeparam name="T">request content</typeparam>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.Id">
+            <summary>
+            RequestId
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.Content">
+            <summary>
+            Request content
+            </summary>
+        </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.Headers">
+            <summary>
+            Initial headers 
+            </summary>
+        </member>
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.#ctor(System.String,`0,System.Collections.Generic.IDictionary{System.String,System.String})">
+            <summary>
+            Initializes a new instance of <see cref="T:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1"/>
+            </summary>
+        </member>
         <member name="T:MyLab.AsyncProcessor.Sdk.Processor.IAsyncProcessingLogic`1">
             <summary>
             Performs request processing
             </summary>
             <typeparam name="T">Request type</typeparam>
         </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IAsyncProcessingLogic`1.ProcessAsync(`0,MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator)">
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.IAsyncProcessingLogic`1.ProcessAsync(MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest{`0},MyLab.AsyncProcessor.Sdk.Processor.IProcessingOperator)">
             <summary>
             Processes request
             </summary>

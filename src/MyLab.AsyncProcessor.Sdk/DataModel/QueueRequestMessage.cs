@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace MyLab.AsyncProcessor.Sdk.DataModel
 {
@@ -18,5 +19,12 @@ namespace MyLab.AsyncProcessor.Sdk.DataModel
         [JsonProperty("content")]
         [JsonConverter(typeof(CustomDataConverter))]
         public string Content { get; set; }
+
+        /// <summary>
+        /// Contains headers from initial http request
+        /// </summary>
+        [JsonProperty("headers")]
+        public Dictionary<string,string> Headers { get; set; }
+        
     }
 }
