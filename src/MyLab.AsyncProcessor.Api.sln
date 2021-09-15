@@ -5,17 +5,19 @@ VisualStudioVersion = 16.0.30406.217
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.AsyncProcessor.Api", "MyLab.AsyncProcessor.Api\MyLab.AsyncProcessor.Api.csproj", "{39CAEBDF-6979-45F4-A374-62917A76589F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F1433CEE-341D-40DD-AC00-62886708E771}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F1433CEE-341D-40DD-AC00-62886708E771}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{71C6F0BF-2465-44FE-9499-7BC84F89318D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{71C6F0BF-2465-44FE-9499-7BC84F89318D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLab.AsyncProcessor.Sdk", "MyLab.AsyncProcessor.Sdk\MyLab.AsyncProcessor.Sdk.csproj", "{663F3931-A07B-415A-A2A8-7B66D816D660}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.AsyncProcessor.Sdk", "MyLab.AsyncProcessor.Sdk\MyLab.AsyncProcessor.Sdk.csproj", "{663F3931-A07B-415A-A2A8-7B66D816D660}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTest", "IntegrationTest", "{13D5165C-7B63-4C37-A959-8F3FAFCADD09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProcessor", "TestProcessor\TestProcessor.csproj", "{8727386F-79BC-4418-8DEF-FE913FD364BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProcessor", "TestProcessor\TestProcessor.csproj", "{8727386F-79BC-4418-8DEF-FE913FD364BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest.Share", "IntegrationTest.Share\IntegrationTest.Share.csproj", "{A4E657E1-3C70-428F-B730-3A01FB100AE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTest.Share", "IntegrationTest.Share\IntegrationTest.Share.csproj", "{A4E657E1-3C70-428F-B730-3A01FB100AE3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.RabbitClient", "..\..\rebbit-client\src\MyLab.RabbitClient\MyLab.RabbitClient.csproj", "{6610B7C4-E874-4D74-91A5-D6150D9ACC24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{A4E657E1-3C70-428F-B730-3A01FB100AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4E657E1-3C70-428F-B730-3A01FB100AE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4E657E1-3C70-428F-B730-3A01FB100AE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6610B7C4-E874-4D74-91A5-D6150D9ACC24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6610B7C4-E874-4D74-91A5-D6150D9ACC24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6610B7C4-E874-4D74-91A5-D6150D9ACC24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6610B7C4-E874-4D74-91A5-D6150D9ACC24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

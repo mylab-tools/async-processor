@@ -34,17 +34,21 @@ namespace MyLab.AsyncProcessor.Api
 
             services.AddUrlBasedHttpMetrics();
             services.AddAppStatusProviding();
-            services.AddRedisService(Configuration);
 
-            services.AddRabbitPublisher()
-                .AddRabbitConsumer<AsyncProcessorOptions, DeadLetterConsumer>(opt => opt.DeadLetter)
-                .ConfigureRabbitClient(Configuration, "Mq");
+            services.AddRedis(RedisConnectionStrategy.Background);
+
+            services
+                .AddRabbit()
+                .AddRabbitConsumer<AsyncProcessorOptions, DeadLetterConsumer>(opt => opt.DeadLetter);
             
             services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
 
             services.Configure<AsyncProcessorOptions>(Configuration.GetSection("AsyncProc"));
 
             services.Configure<ExceptionProcessingOptions>(o => o.HideError = false);
+
+            services.ConfigureRedis(Configuration);
+            services.ConfigureRabbit(Configuration, "Mq");
 
             services.AddSingleton<Logic>();
         }
