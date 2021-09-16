@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using MyLab.AsyncProcessor.Api.Services;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.HttpMetrics;
+using MyLab.RabbitClient;
 using MyLab.Redis;
 using MyLab.StatusProvider;
 using MyLab.Syslog;
@@ -41,7 +42,7 @@ namespace MyLab.AsyncProcessor.Api
             services.AddRedis(RedisConnectionStrategy.Background);
 
             services
-                .AddRabbit()
+                .AddRabbit(RabbitConnectionStrategy.Background)
                 .AddRabbitConsumer<AsyncProcessorOptions, DeadLetterConsumer>(opt => opt.DeadLetter);
             
             services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
