@@ -269,3 +269,23 @@ class ProcessingLogic : IAsyncProcessingLogic<TestRequest>
 }
 ```
 
+## Проверка работоспособности
+
+Проверка рбаотоспособности осуществляется через механизм `HealthCheck`. Результат проверки доступен по относительному адресу `/health`.
+
+Пример запроса:
+
+```http
+GET http://localhost/health
+```
+
+Пример ответа:
+
+```http
+200 OK
+
+Content-Type: text/plain
+
+Healthy
+```
+
