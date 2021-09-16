@@ -19,7 +19,7 @@ namespace IntegrationTests
         {
             return new RabbitExchangeFactory(
                 type,
-                new RabbitChannelProvider(new RabbitConnectionProvider(MqOptions)
+                new RabbitChannelProvider(new LazyRabbitConnectionProvider(MqOptions)
                 ))
             {
                 AutoDelete = autoDelete
@@ -29,7 +29,7 @@ namespace IntegrationTests
         public static RabbitQueueFactory QueueFactory(bool autoDelete = true)
         {
             return new RabbitQueueFactory(
-                new RabbitChannelProvider(new RabbitConnectionProvider(MqOptions)
+                new RabbitChannelProvider(new LazyRabbitConnectionProvider(MqOptions)
                 ))
             {
                 AutoDelete = autoDelete

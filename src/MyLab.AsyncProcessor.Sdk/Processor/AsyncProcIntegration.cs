@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyLab.AsyncProcessor.Sdk.DataModel;
+using MyLab.RabbitClient;
 using MyLab.RabbitClient.Consuming;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
@@ -34,7 +35,8 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             var configSection = config.GetSection(configSectionName);
             services.Configure<AsyncProcessorOptions>(configSection);
 
-            services.ConfigureRabbitClient(config, "Mq");
+            services.AddRabbit(RabbitConnectionStrategy.Background);
+            services.ConfigureRabbit(config, "Mq");
             services.AddRabbitConsumer<AsyncProcessorOptions, AsyncProcMqConsumingLogic<TRequest>>(opt => opt.Queue);
 
             services.AddSingleton<IAsyncProcessingLogic<TRequest>, TLogic>();

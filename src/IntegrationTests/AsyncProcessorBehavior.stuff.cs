@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using IntegrationTest.Share;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MyLab.ApiClient;
 using MyLab.ApiClient.Test;
 using MyLab.AsyncProcessor.Sdk;
@@ -133,6 +134,7 @@ namespace IntegrationTests
         private RabbitQueue CreateQueue(RabbitExchange deadLetterExchange, string prefix = null)
         {
             var queueFactory = TestTools.QueueFactory();
+            queueFactory.AutoDelete = true;
             queueFactory.DeadLetterExchange = deadLetterExchange?.Name;
 
             string name = (prefix ?? "async-proc-test:queue:") + Guid.NewGuid().ToString("N");
@@ -142,6 +144,7 @@ namespace IntegrationTests
         private RabbitExchange CreateDeadLetterExchange()
         {
             var exchangeFactory = TestTools.ExchangeFactory(RabbitExchangeType.Fanout);
+            exchangeFactory.AutoDelete = true;
 
             string name = "async-proc-test:dead-letter:" + Guid.NewGuid().ToString("N") + ":dead-letter";
             return exchangeFactory.CreateWithName(name);
@@ -168,6 +171,8 @@ namespace IntegrationTests
 
                 srv.AddApiClients(reg => { reg.RegisterContract<IAsyncProcessorRequestsApi>(); },
                     new SingleHttpClientFactory(asyncProcApiClient));
+
+                srv.AddLogging(l => l.AddXUnit(_output));
 
                 srv.AddSingleton<IWebCallReporterFactory>(new WebCallReporterFactory(_output));
 
@@ -222,6 +227,8 @@ namespace IntegrationTests
                     opt.DeadLetter = deadLetterQueue.Name;
                     opt.Callback = callbackExchangeName;
                 });
+
+                srv.AddLogging(l => l.AddXUnit(_output));
             });
 
             tc.Output = _output;

@@ -12,6 +12,7 @@ using MyLab.Log.Dsl;
 using MyLab.RabbitClient.Publishing;
 using MyLab.Redis;
 using MyLab.Redis.ObjectModel;
+using MyLab.Redis.Services;
 
 namespace MyLab.AsyncProcessor.Api.Services
 {
