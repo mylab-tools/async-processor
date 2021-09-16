@@ -129,11 +129,12 @@
             Contract key
             </summary>
         </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.CreateAsync(MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest)">
+        <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.CreateAsync(MyLab.AsyncProcessor.Sdk.DataModel.CreateRequest,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Creates new request
             </summary>
             <param name="request">request data</param>
+            <param name="additionalHeaders">additional headers</param>
             <returns>new request identifier</returns>
         </member>
         <member name="M:MyLab.AsyncProcessor.Sdk.IAsyncProcessorRequestsApi.GetStatusAsync(System.String)">
