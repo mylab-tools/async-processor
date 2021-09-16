@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 
@@ -19,9 +20,10 @@ namespace MyLab.AsyncProcessor.Sdk
         /// Creates new request
         /// </summary>
         /// <param name="request">request data</param>
+        /// <param name="additionalHeaders">additional headers</param>
         /// <returns>new request identifier</returns>
         [Post]
-        Task<string> CreateAsync([JsonContent] CreateRequest request);
+        Task<string> CreateAsync([JsonContent] CreateRequest request, [HeaderCollection] IDictionary<string, object> additionalHeaders = null);
 
         /// <summary>
         /// Gets request status

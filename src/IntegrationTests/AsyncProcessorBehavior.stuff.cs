@@ -87,7 +87,7 @@ namespace IntegrationTests
                 CallbackRouting = "foo-callback"
             };
 
-            var reqIdResp = await api.Call(s => s.CreateAsync(createRequest));
+            var reqIdResp = await api.Call(s => s.CreateAsync(createRequest, null));
             return reqIdResp.ResponseContent;
         }
 
