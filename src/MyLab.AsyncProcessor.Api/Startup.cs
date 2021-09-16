@@ -43,7 +43,7 @@ namespace MyLab.AsyncProcessor.Api
 
             services
                 .AddRabbit(RabbitConnectionStrategy.Background)
-                .AddRabbitConsumer<AsyncProcessorOptions, DeadLetterConsumer>(opt => opt.DeadLetter);
+                .AddRabbitConsumer<AsyncProcessorOptions, DeadLetterConsumer>(opt => opt.DeadLetter, true);
             
             services.Configure<SyslogLoggerOptions>(Configuration.GetSection("Logging:Syslog"));
 
