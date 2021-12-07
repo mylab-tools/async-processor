@@ -4,19 +4,20 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using MyLab.AsyncProcessor.Api.Models;
 using MyLab.AsyncProcessor.Api.Services;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.WebErrors;
 
 namespace MyLab.AsyncProcessor.Api.Controllers
 {
-    [Route("v1/[controller]")]
+    [Route("v2/requests")]
     [ApiController]
-    public class RequestsController : ControllerBase
+    public class RequestsControllerV2 : ControllerBase
     {
         private readonly Logic _logic;
 
-        public RequestsController(Logic logic)
+        public RequestsControllerV2(Logic logic)
         {
             _logic = logic;
         }
@@ -40,6 +41,18 @@ namespace MyLab.AsyncProcessor.Api.Controllers
                 return NotFound();
 
             return Ok(status);
+        }
+
+        [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetDetails([FromRoute] string id, [FromQuery]RequestDetailsQueryDto query)
+        {
+            var details = await _logic.GetRequestDetailsAsync(id, query.IncludeResponse);
+
+            if (details == null)
+                return NotFound();
+
+            return Ok(details);
         }
 
         [ErrorToResponse(typeof(RequestNotFoundException), HttpStatusCode.NotFound)]

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyLab.AsyncProcessor.Api.Models;
 using MyLab.AsyncProcessor.Api.Tools;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Log;
@@ -143,6 +144,32 @@ namespace MyLab.AsyncProcessor.Api.Services
             var resultContent = await resultKey.GetAsync();
 
             return new RequestResult(resultMime, resultContent);
+        }
+
+        public async Task<RequestDetails> GetRequestDetailsAsync(string id, bool includeResponse)
+        {
+            var statusKey = await GetStatusKeyAsync(id);
+            var status = await RequestStatusTools.ReadFromRedis(statusKey);
+
+            if (status == null)
+                throw new RequestResultNotReadyException()
+                    .AndFactIs("reques-id", id);
+
+            var reqDetails = new RequestDetails
+            {
+                Id = id,
+                Status = status
+            };
+
+            if (status.Successful && includeResponse)
+            {
+                var resultKey = GetResultKey(id);
+                var resultContent = await resultKey.GetAsync();
+
+                reqDetails.SetResponse(resultContent);
+            }
+
+            return reqDetails;
         }
 
         public async Task CompleteWithResultAsync(string id, byte[] content, string mimeType)

@@ -26,19 +26,19 @@ using Startup = MyLab.AsyncProcessor.Api.Startup;
 
 namespace IntegrationTests
 {
-    public partial class AsyncProcessorBehavior
+    public partial class AsyncProcessorV1Behavior
     {
-        private readonly TestApi<Startup, IAsyncProcessorRequestsApi> _asyncProcTestApi;
+        private readonly TestApi<Startup, IAsyncProcessorRequestsApiV1> _asyncProcTestApi;
         private readonly TestApi<TestProcessor.Startup, IProcessorApi> _procApi;
         private readonly ITestOutputHelper _output;
 
         
 
         /// <summary>
-        /// Initializes a new instance of <see cref="AsyncProcessorBehavior"/>
+        /// Initializes a new instance of <see cref="AsyncProcessorV1Behavior"/>
         /// </summary>
-        public AsyncProcessorBehavior(
-            TestApi<Startup, IAsyncProcessorRequestsApi> asyncProcTestApi,
+        public AsyncProcessorV1Behavior(
+            TestApi<Startup, IAsyncProcessorRequestsApiV1> asyncProcTestApi,
             TestApi<TestProcessor.Startup, IProcessorApi> procApi,
             ITestOutputHelper output
         )
@@ -61,7 +61,7 @@ namespace IntegrationTests
             return (queue, exchange);
         }
 
-        private (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) Prepare(string callbackExchangeName, ILostRequestEventHandler lostRequestEventHandler = null, int reqIdleTimeoutSec = 300)
+        private (TestApiClient<IAsyncProcessorRequestsApiV1> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) Prepare(string callbackExchangeName, ILostRequestEventHandler lostRequestEventHandler = null, int reqIdleTimeoutSec = 300)
         {
             var deadLetterExchange = CreateDeadLetterExchange();
             var deadLetterQueue = CreateQueue(null, "async-proc-test:dead-letter:");
@@ -77,7 +77,7 @@ namespace IntegrationTests
 
         private async Task<string> SendRequest(
             TestRequest request,
-            TestApiClient<IAsyncProcessorRequestsApi> api,
+            TestApiClient<IAsyncProcessorRequestsApiV1> api,
             string predefinedId = null)
         {
             var createRequest = new CreateRequest
@@ -93,7 +93,7 @@ namespace IntegrationTests
 
         private async Task<RequestStatus> ProcessRequestAsync(
             string reqId,
-            TestApiClient<IAsyncProcessorRequestsApi> api)
+            TestApiClient<IAsyncProcessorRequestsApiV1> api)
         {
             TestCallDetails<RequestStatus> statusResp = null;
             
@@ -118,8 +118,8 @@ namespace IntegrationTests
         }
 
         private async Task<T> GetResult<T>(
-            (TestApiClient<IAsyncProcessorRequestsApi> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) api,
-            Expression<Func<IAsyncProcessorRequestsApi, Task<T>>> call)
+            (TestApiClient<IAsyncProcessorRequestsApiV1> AsyncProcApi, TestApiClient<IProcessorApi> ProcApi) api,
+            Expression<Func<IAsyncProcessorRequestsApiV1, Task<T>>> call)
         {
             var resResp = await api.AsyncProcApi.Call(call);
 
@@ -169,7 +169,7 @@ namespace IntegrationTests
                     opt.Queue = queue.Name;
                 });
 
-                srv.AddApiClients(reg => { reg.RegisterContract<IAsyncProcessorRequestsApi>(); },
+                srv.AddApiClients(reg => { reg.RegisterContract<IAsyncProcessorRequestsApiV1>(); },
                     new SingleHttpClientFactory(asyncProcApiClient));
 
                 srv.AddLogging(l => l.AddXUnit(_output));
@@ -193,7 +193,7 @@ namespace IntegrationTests
             return tc;
         }
 
-        private TestApiClient<IAsyncProcessorRequestsApi> StartAsyncProcApi(
+        private TestApiClient<IAsyncProcessorRequestsApiV1> StartAsyncProcApi(
             RabbitQueue queue,
             RabbitQueue deadLetterQueue,
             string callbackExchangeName,
@@ -283,17 +283,6 @@ namespace IntegrationTests
                 LastLostRequestId = reqId;
             }
         }
-
-        //class TestConsumer : RabbitConsumer<TestRequest>
-        //{
-        //    public TestRequest LastMsg { get; private set; }
-        //    protected override Task ConsumeMessageAsync(ConsumedMessage<TestRequest> consumedMessage)
-        //    {
-        //        LastMsg = consumedMessage.Content;
-
-        //        return Task.CompletedTask;
-        //    }
-        //}
 
         class TestProcessingLogic : IAsyncProcessingLogic<TestRequest>
         {

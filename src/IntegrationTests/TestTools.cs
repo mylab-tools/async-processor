@@ -1,4 +1,5 @@
-﻿using MyLab.RabbitClient;
+﻿using Microsoft.AspNetCore.Cors.Infrastructure;
+using MyLab.RabbitClient;
 using MyLab.RabbitClient.Connection;
 using MyLab.RabbitClient.Model;
 
