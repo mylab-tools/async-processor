@@ -14,6 +14,7 @@ using MyLab.Redis;
 using MyLab.StatusProvider;
 using MyLab.Syslog;
 using MyLab.WebErrors;
+using Newtonsoft.Json;
 using Prometheus;
 
 namespace MyLab.AsyncProcessor.Api
@@ -32,7 +33,7 @@ namespace MyLab.AsyncProcessor.Api
         {
             services
                 .AddControllers(o=> o.AddExceptionProcessing())
-                .AddNewtonsoftJson();
+                .AddNewtonsoftJson(o => o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore);
 
             services.AddLogging(c => c.AddSyslog());
 

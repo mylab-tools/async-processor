@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
@@ -9,9 +8,8 @@ namespace MyLab.AsyncProcessor.Sdk
     /// <summary>
     /// Async processor API contract
     /// </summary>
-    [Api("v1/requests", Key = ContractKey)]
-    [Obsolete("Use IAsyncProcessorRequestsApiV1 instead")]
-    public interface IAsyncProcessorRequestsApi
+    [Api("v2/requests", Key = ContractKey)]
+    public interface IAsyncProcessorRequestsApiV2
     {
         /// <summary>
         /// Contract key
@@ -33,6 +31,14 @@ namespace MyLab.AsyncProcessor.Sdk
         /// <param name="id">request id</param>
         [Get("{id}/status")]
         Task<RequestStatus> GetStatusAsync([Path]string id);
+
+        /// <summary>
+        /// Gets request status
+        /// </summary>
+        /// <param name="id">request id</param>
+        /// <param name="includeResponse">include response property when prepare request details</param>
+        [Get("{id}")]
+        Task<RequestDetails> GetRequestDetailsAsync([Path] string id, [Query("include_resp")] bool includeResponse);
 
         /// <summary>
         /// Update business level step

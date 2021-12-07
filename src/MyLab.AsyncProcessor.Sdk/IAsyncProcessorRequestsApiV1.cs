@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
@@ -10,8 +9,7 @@ namespace MyLab.AsyncProcessor.Sdk
     /// Async processor API contract
     /// </summary>
     [Api("v1/requests", Key = ContractKey)]
-    [Obsolete("Use IAsyncProcessorRequestsApiV1 instead")]
-    public interface IAsyncProcessorRequestsApi
+    public interface IAsyncProcessorRequestsApiV1
     {
         /// <summary>
         /// Contract key

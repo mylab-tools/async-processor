@@ -1,0 +1,251 @@
+openapi: 3.0.0
+info:
+  title: MyLab.AsyncProcessor API
+  version: '2'
+paths:
+  '/requests':
+    post:
+      description: Creates new async request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequest'
+      responses:
+        200:
+          description: Created request identifier
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: uuid
+                example: '4a7bfaba19c7494b8345a89ec640dada'
+  '/requests/{id}/status':
+    get:
+      description: Gets request status
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      responses:
+        200:
+          description: Request status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestStatus'
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
+  '/requests/{id}':
+    get:
+      description: Gets request details
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: include_resp
+        in: query
+        description: Include response into details
+        schema:
+          type: string
+        example: false
+      responses:
+        200:
+          description: Request status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestDetails'
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
+  '/requests/{id}/status/biz-step':
+    put:
+      description: Sets business step
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        200:
+          description: Business step was set successfully
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
+  '/requests/{id}/status/step/processing':
+    post:
+      description: Sets 'Processing' as value of processing step 
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        200:
+          description: Step was set successfully
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
+  '/requests/{id}/status/error':
+    put:
+      description: Sets request processing error
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessingError'
+      responses:
+        200:
+          description: Processing error was set successfully
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
+  '/requests/{id}/result':
+    get:
+      description: Gets request result
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      responses:
+        200:
+          description: Request result
+          content:
+            application/json:
+              schema: {}
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
+        400:  
+          description: Request result is not ready
+    put:
+      description: Sets request result
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        200:
+          description: Request result was successfully updated
+        404:  
+          $ref: '#/components/responses/RequestNotFound'
+        415:
+          description: Unsupported Media Type 
+components:
+  parameters:
+    RequestId:
+      name: id
+      in: path
+      required: true
+      description: Request identifier
+      schema: 
+        type: string
+        format: uuid
+  responses:
+    RequestNotFound:
+      description: Request with specified identifier not found
+  schemas:
+    RequestDetails:
+      type: object
+      description: Contains request details
+      properties:
+        id: 
+          description: Unique request identifier
+          type: string
+          example: '1e4c8cfa16d44088bd7eeb5a01741338'
+        status:
+          $ref: '#/components/schemas/RequestStatus'
+        resObj:
+          type: object
+          additionalProperties: true
+          description: Processing result object
+          example: { "value": "123", "dt": "10.10.2010"  }
+        resBin:
+          type: string
+          format: byte
+          description: Processing result bin
+          example: 'SGVsbG93IHdvcmxkIQ=='
+      required:
+      - id
+      - status
+    CreateRequest:
+      type: object
+      description: Contains request parameters
+      properties:
+        requestId:
+          type: string
+          description:  Defines predefined request id
+          example: '54f5d4d35d47497a92386e46acc6d3be'
+        procRouting:
+          type: string
+          description: Defines queue routing to send message to processor
+          example: big
+        callbackRouting:
+          type: string
+          description: Defines queue routing to send callback messages through callback exchange
+          example: client1
+        content: 
+          type: object
+          additionalProperties: true
+          description: Request content
+          example: { "value": "123", "dt": "10.10.2010"  }
+      required:
+      - content
+    RequestStatus:
+      type: object
+      properties:
+        processStep:
+          $ref: '#/components/schemas/ProcessStep'
+        bizStep:
+          type: string
+          description: Business defined steps. Available when processStep=processing.
+        successful:
+          type: boolean
+          description: Indicates that processing was successful
+        error:
+          $ref: '#/components/schemas/ProcessingError'
+        resultSize:
+          type: integer
+          format: int64
+          description: Result content size
+        resultMime:
+          type: string
+          description: Result mime type
+      required:
+      - processStep
+    ProcessStep:
+      type: string
+      enum:
+      - pending
+      - processing
+      - completed
+      description: |
+        * `pending` - sent to queue and waiting for processor
+        * `processing` - a process notify that received the request
+        * `completed` - a request processing has coompleted
+    ProcessingError:
+      type: object
+      description: Contains processing error
+      properties:
+        bizMgs:
+          type: string
+          description: Busines logic level message
+          example: Account is empty
+        techMgs:
+          type: string
+          description: Technical message
+          example: Value can not be null
+        techInfo:
+          type: string
+          description: Additioanl technical information
+          example: '[stack trace]'
+        errorId:
+          type: string
+          description: Literal error identifier
+          example: "my-error:some-thing-wrong"

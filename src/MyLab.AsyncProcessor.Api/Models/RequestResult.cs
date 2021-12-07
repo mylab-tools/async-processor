@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MyLab.AsyncProcessor.Api.Tools
+namespace MyLab.AsyncProcessor.Api.Models
 {
     public class RequestResult
     {

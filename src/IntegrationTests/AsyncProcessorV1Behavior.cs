@@ -13,8 +13,8 @@ using Startup = MyLab.AsyncProcessor.Api.Startup;
 
 namespace IntegrationTests
 {
-    public partial class AsyncProcessorBehavior :
-         IClassFixture<TestApi<Startup, IAsyncProcessorRequestsApi>>,
+    public partial class AsyncProcessorV1Behavior :
+         IClassFixture<TestApi<Startup, IAsyncProcessorRequestsApiV1>>,
          IClassFixture<TestApi<TestProcessor.Startup, IProcessorApi>>
     {
         [Fact]
