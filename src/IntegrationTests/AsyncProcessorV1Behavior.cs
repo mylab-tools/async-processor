@@ -80,7 +80,7 @@ namespace IntegrationTests
 
                 reqId = await SendRequest(requestContent, asyncProcApi);
 
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                await Task.Delay(TimeSpan.FromSeconds(1));
 
                 StartProcessor(queue, asyncProcApiInnerClient);
 

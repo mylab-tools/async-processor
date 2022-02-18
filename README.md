@@ -8,7 +8,7 @@ Docker образ: [![Docker image](https://img.shields.io/docker/v/ozzyext/myla
 ```
 Поддерживаемые платформы: .NET Core 3.1+
 ```
-Ознакомьтесь с последними изменениями в [журнале изменений](/changelog.md).
+Ознакомьтесь с последними изменениями в [журнале изменений](/CHANGELOG.md).
 
 ## Обзор
 
@@ -134,6 +134,8 @@ docker pull ozzyext/mylab-async-proc-api
 
 `API` поддерживает [удалённый конфиг](https://github.com/ozzy-ext-mylab/remote-config#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5).
 
+#### Настройки логики `AsyncProc`
+
 Имя узла конфигурации - `AsyncProc`. Ниже приведён пример конфигурации:
 
 ```json
@@ -165,6 +167,32 @@ docker pull ozzyext/mylab-async-proc-api
 * `00:01` - 1 минута.
 
 Подробнее о форматах `TimeSpan` [тут](https://docs.microsoft.com/ru-ru/dotnet/api/system.timespan.parse?view=netcore-3.1). 
+
+#### Настройки подключения к RabbitMQ
+
+Нстройки подключения к `RabbitMQ` заключены в узле `Mq` и соответствуют параметрам конфигурации [MyLab.RabbitClient](https://github.com/mylab-tools/rabbit-client#%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D1%8B-%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D0%B8).
+
+#### Настройки подключения к Redis
+
+Нстройки подключения к `Readis` заключены в узле `Redis` и соответствуют параметрам конфигурации [MyLab.RedisAdapter](https://github.com/mylab-tools/redis-adapter#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B0%D1%86%D0%B8%D1%8F).
+
+#### Настройки OpenTelemetry
+
+Настройки `OpenTelemetry` заключены в узле `Otlp` и расширяют [базовые настройки экспортёра телеметрии](https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/src/OpenTelemetry.Exporter.OpenTelemetryProtocol/README.md#options-properties). 
+
+Основные базовые параметры:
+
+* `Endpoint` - конечная точка, куда экспортёр будет отправялть телеметрию;
+* `Protocol ` - протокол передачи телеметрии:
+  * `grpc` for protobuf-encoded data using gRPC wire format over HTTP/2 connection;
+  * `http/protobuf` for protobuf-encoded data over HTTP connection;
+  * `http/json` for JSON-encoded data over HTTP connection.
+
+Специфичные параметры `AsyncProc`:
+
+* `Enabled` - `true`/`false`, включена/выключена сборка телеметрии;
+
+* `ServiceName` - имя сервиса, которе будет фигурировать в экспортированной телеметрии.
 
 ### Событийная модель
 
