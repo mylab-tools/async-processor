@@ -20,7 +20,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         private readonly IDslLogger _log;
 
         public AsyncProcMqConsumingLogic(
-            IHttpClientFactory httpClientFactory,
+            IApiClientFactory httpClientFactory,
             IAsyncProcessingLogic<T> logic,
             IWebCallReporterFactory reporterFactory = null,
             ILostRequestEventHandler lostRequestEventHandler = null,
