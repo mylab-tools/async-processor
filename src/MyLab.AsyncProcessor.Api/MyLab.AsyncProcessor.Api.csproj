@@ -2,24 +2,30 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>1.3.5</Version>
-    <AssemblyVersion>1.3.5.0909</AssemblyVersion>
-    <FileVersion>1.3.5.0909</FileVersion>
+    <Version>1.7.10</Version>
+    <AssemblyVersion>1.7.10.2402</AssemblyVersion>
+    <FileVersion>1.7.10.2402</FileVersion>
     <PackageIcon>tools.png</PackageIcon>
     <PackageIconUrl />
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.22" />
     <PackageReference Include="MyLab.HttpMetrics" Version="1.1.3" />
-    <PackageReference Include="MyLab.Log.Dsl" Version="3.1.2" />
-    <PackageReference Include="MyLab.RabbitClient" Version="2.3.9" />
-    <PackageReference Include="MyLab.Redis" Version="1.3.3" />
+    <PackageReference Include="MyLab.Log" Version="3.3.12" />
+    <PackageReference Include="MyLab.Log.Dsl" Version="3.5.3" />
+    <PackageReference Include="MyLab.RabbitClient" Version="2.7.13" />
+    <PackageReference Include="MyLab.RabbitTracing" Version="1.1.4" />
+    <PackageReference Include="MyLab.Redis" Version="1.4.3" />
     <PackageReference Include="MyLab.RemoteConfig" Version="1.3.2" />
     <PackageReference Include="MyLab.StatusProvider" Version="1.5.9" />
     <PackageReference Include="MyLab.Syslog" Version="1.3.6" />
     <PackageReference Include="MyLab.WebErrors" Version="1.1.3" />
-    <PackageReference Include="prometheus-net.AspNetCore" Version="4.0.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.2.0-beta1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc8" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc8" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc8" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="5.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

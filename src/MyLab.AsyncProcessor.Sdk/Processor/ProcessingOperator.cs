@@ -7,11 +7,11 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
     class ProcessingOperator : IProcessingOperator
     {
         private readonly string _requestId;
-        private readonly ApiClient<IAsyncProcessorRequestsApi> _api;
+        private readonly ApiClient<IAsyncProcessorRequestsApiV2> _api;
 
         public IWebCallReporter Reporter { get; set; }
 
-        public ProcessingOperator(string requestId, ApiClient<IAsyncProcessorRequestsApi> api)
+        public ProcessingOperator(string requestId, ApiClient<IAsyncProcessorRequestsApiV2> api)
         {
             _requestId = requestId;
             _api = api;

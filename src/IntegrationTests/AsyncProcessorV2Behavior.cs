@@ -309,6 +309,30 @@ namespace IntegrationTests
         }
 
         [Fact]
+        public async Task ShouldProcessorGetIncomingDt()
+        {
+            //Arrange
+            using var callback = CreateCallback();
+            var api = Prepare(callback.Exchange.Name);
+
+            var requestContent = new TestRequest
+            {
+                Command = "return-incoming-dt"
+            };
+
+            //Act
+
+            var reqId = await SendRequest(requestContent, api.AsyncProcApi);
+            var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
+            var resultIncomingDt = await GetResult(api, rApi => rApi.GetObjectResult<DateTime>(reqId));
+
+            //Assert
+            Assert.Equal(ProcessStep.Completed, status.Step);
+            Assert.True(status.Successful);
+            Assert.NotEqual(default, resultIncomingDt);
+        }
+
+        [Fact]
         public async Task ShouldProvideProcessingError()
         {
             //Arrange

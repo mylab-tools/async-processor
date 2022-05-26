@@ -170,6 +170,7 @@ namespace IntegrationTests
                 });
 
                 srv.AddApiClients(reg => { reg.RegisterContract<IAsyncProcessorRequestsApiV2>(); },
+                    o => {},
                     new SingleHttpClientFactory(asyncProcApiClient));
 
                 srv.AddLogging(l => l.AddXUnit(_output));

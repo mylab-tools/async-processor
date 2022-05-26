@@ -30,6 +30,8 @@ namespace TestProcessor
                     throw new InterruptConsumingException();
                 case "repeat-str":
                     return op.CompleteWithResultAsync(string.Join(',', Enumerable.Repeat(request.Content.Value1, request.Content.Value2)));
+                case "return-incoming-dt":
+                    return op.CompleteWithResultAsync(request.IncomingDt);
                 default: throw new IndexOutOfRangeException();
             }
         }
