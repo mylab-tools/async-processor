@@ -66,7 +66,8 @@ namespace MyLab.AsyncProcessor.Api.Services
             var msgPayload = new QueueRequestMessage
             {
                 Id = id,
-                Content = createRequest.Content
+                Content = createRequest.Content,
+                IncomingDt = DateTime.Now
             };
 
             if (httpRequest.Headers != null)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace MyLab.AsyncProcessor.Sdk.DataModel
@@ -13,6 +14,13 @@ namespace MyLab.AsyncProcessor.Sdk.DataModel
         /// </summary>
         [JsonProperty("id")]
         public string Id { get; set; }
+
+        /// <summary>
+        /// Incoming date time
+        /// </summary>
+        [JsonProperty("incomingDt")]
+        public DateTime IncomingDt { get; set; }
+
         /// <summary>
         /// Request content
         /// </summary>

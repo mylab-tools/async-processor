@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace MyLab.AsyncProcessor.Sdk.Processor
@@ -15,6 +16,11 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         public string Id { get; set; }
 
         /// <summary>
+        /// Incoming date time
+        /// </summary>
+        public DateTime IncomingDt { get; }
+
+        /// <summary>
         /// Request content
         /// </summary>
         public T Content { get; }
@@ -27,9 +33,10 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         /// <summary>
         /// Initializes a new instance of <see cref="AsyncProcRequest{T}"/>
         /// </summary>
-        public AsyncProcRequest(string id, T content, IDictionary<string, string> headers)
+        public AsyncProcRequest(string id, DateTime incomingDt, T content, IDictionary<string, string> headers)
         {
             Id = id;
+            IncomingDt = incomingDt;
             Content = content;
             Headers = new ReadOnlyDictionary<string, string>(headers);
         }

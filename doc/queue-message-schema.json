@@ -7,12 +7,24 @@
 			"description": "Request identifier",
 			"type": "string"
 		},
+		"incomingDt": {
+			"description": "Incoming date time",
+			"type": "string",
+			"format": "date-time"
+		},
 		"content": {
 			"description": "Request content"
+		},
+		"headers": {
+			"description": "Contains headers from initial http request",
+			"additionalProperties": {
+				"type": "string"
+			}
 		}
 	},
 	"required": [
 		"id",
+		"incomingDt",
 		"content"
 	],
 	"additionalProperties": false

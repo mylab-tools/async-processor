@@ -16,7 +16,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         private readonly IAsyncProcessingLogic<T> _logic;
         private readonly ILostRequestEventHandler _lostRequestEventHandler;
         private readonly IWebCallReporter _reporter;
-        private readonly ApiClient<IAsyncProcessorRequestsApi> _api;
+        private readonly ApiClient<IAsyncProcessorRequestsApiV2> _api;
         private readonly IDslLogger _log;
 
         public AsyncProcMqConsumingLogic(
@@ -28,8 +28,8 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         {
             _logic = logic;
             _lostRequestEventHandler = lostRequestEventHandler;
-            _reporter = reporterFactory?.Create<IAsyncProcessorRequestsApi>();
-            _api = httpClientFactory.CreateApiClient<IAsyncProcessorRequestsApi>();
+            _reporter = reporterFactory?.Create<IAsyncProcessorRequestsApiV2>();
+            _api = httpClientFactory.CreateApiClient<IAsyncProcessorRequestsApiV2>();
             _log = logger?.Dsl();
         }
 
@@ -47,7 +47,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
 
             var requestContent = JsonConvert.DeserializeObject<T>(message.Content.Content);
 
-            var request = new AsyncProcRequest<T>(message.Content.Id, requestContent, message.Content.Headers);
+            var request = new AsyncProcRequest<T>(message.Content.Id, message.Content.IncomingDt, requestContent, message.Content.Headers);
 
             var procOperator = new ProcessingOperator(message.Content.Id, _api)
             {

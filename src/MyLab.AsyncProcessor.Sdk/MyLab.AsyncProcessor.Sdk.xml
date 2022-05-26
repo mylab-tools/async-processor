@@ -99,6 +99,11 @@
             Request identifier
             </summary>
         </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage.IncomingDt">
+            <summary>
+            Incoming date time
+            </summary>
+        </member>
         <member name="P:MyLab.AsyncProcessor.Sdk.DataModel.QueueRequestMessage.Content">
             <summary>
             Request content
@@ -423,6 +428,11 @@
             RequestId
             </summary>
         </member>
+        <member name="P:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.IncomingDt">
+            <summary>
+            Incoming date time
+            </summary>
+        </member>
         <member name="P:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.Content">
             <summary>
             Request content
@@ -433,7 +443,7 @@
             Initial headers 
             </summary>
         </member>
-        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.#ctor(System.String,`0,System.Collections.Generic.IDictionary{System.String,System.String})">
+        <member name="M:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1.#ctor(System.String,System.DateTime,`0,System.Collections.Generic.IDictionary{System.String,System.String})">
             <summary>
             Initializes a new instance of <see cref="T:MyLab.AsyncProcessor.Sdk.Processor.AsyncProcRequest`1"/>
             </summary>
