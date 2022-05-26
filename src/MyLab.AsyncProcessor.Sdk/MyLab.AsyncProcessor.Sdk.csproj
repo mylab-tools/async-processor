@@ -7,12 +7,12 @@
     <PackageProjectUrl>https://github.com/ozzy-ext-mylab/async-processor-api</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ozzy-ext-mylab/async-processor-api.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.7.10.2402</AssemblyVersion>
-    <FileVersion>1.7.10.2402</FileVersion>
+    <AssemblyVersion>1.8.10.2605</AssemblyVersion>
+    <FileVersion>1.8.10.2605</FileVersion>
     <Authors>Andrey O.</Authors>
     <Company>Andrey O.</Company>
     <Description>Allow to build processor-application for MyLab.AsyncProc</Description>
-    <Version>1.7.10</Version>
+    <Version>1.8.10</Version>
     <PackageIcon>tools.png</PackageIcon>
     <PackageIconUrl />
   </PropertyGroup>
