@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MyLab.ApiClient;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.Log.Dsl;
+using MyLab.Log.Scopes;
 using MyLab.RabbitClient.Consuming;
 using Newtonsoft.Json;
 
@@ -17,7 +18,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
         private readonly ILostRequestEventHandler _lostRequestEventHandler;
         private readonly IWebCallReporter _reporter;
         private readonly ApiClient<IAsyncProcessorRequestsApiV2> _api;
-        private readonly IDslLogger _log;
+        private readonly ILogger _logger;
 
         public AsyncProcMqConsumingLogic(
             IApiClientFactory httpClientFactory,
@@ -30,7 +31,8 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
             _lostRequestEventHandler = lostRequestEventHandler;
             _reporter = reporterFactory?.Create<IAsyncProcessorRequestsApiV2>();
             _api = httpClientFactory.CreateApiClient<IAsyncProcessorRequestsApiV2>();
-            _log = logger?.Dsl();
+            _logger = logger;
+            
         }
 
         protected override async Task ConsumeMessageAsync(ConsumedMessage<QueueRequestMessage> message)
@@ -54,23 +56,37 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
                 Reporter = _reporter
             };
 
-            try
+            using var scope = _logger.BeginScope(new FactLogScope("req-id", message.BasicProperties.MessageId));
             {
-                await _logic.ProcessAsync(request, procOperator);
-            }
-            catch (InterruptConsumingException)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                var completeWithErrorReqDetails = await _api.Request(s => s.CompleteWithErrorAsync(message.Content.Id, new ProcessingError
-                {
-                    TechMessage = e.Message,
-                    TechInfo = e.ToString()
-                })).GetDetailedAsync();
+                var dslLog = _logger.Dsl();
 
-                _reporter?.Report(completeWithErrorReqDetails);
+                try
+                {
+                    dslLog.Debug("Begin processing").Write();
+
+                    await _logic.ProcessAsync(request, procOperator);
+                }
+                catch (InterruptConsumingException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    var completeWithErrorReqDetails = await _api.Request(s =>
+                        s.CompleteWithErrorAsync(message.Content.Id, new ProcessingError
+                        {
+                            TechMessage = e.Message,
+                            TechInfo = e.ToString()
+                        })).GetDetailedAsync();
+
+                    _reporter?.Report(completeWithErrorReqDetails);
+
+                    dslLog.Warning("Unhandled exception", e).Write();
+                }
+                finally
+                {
+                    dslLog.Debug("Processing completed").Write();
+                }
             }
         }
     }

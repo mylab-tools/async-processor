@@ -84,6 +84,7 @@ namespace MyLab.AsyncProcessor.Api.Services
                     createRequest.ProcRouting ?? _options.QueueRoutingKey)
                 .SendJson(msgPayload)
                 .AndProperty(p => p.Expiration = ((long)_options.ProcessingTimeout.TotalMilliseconds).ToString())
+                .AndProperty(p => p.MessageId = id)
                 .Publish();
 
             if(createRequest.CallbackRouting != null)

@@ -27,9 +27,9 @@
 
   <ItemGroup>
     <PackageReference Include="MyLab.ApiClient" Version="3.13.24" />
-    <PackageReference Include="MyLab.Log" Version="3.3.12" />
+    <PackageReference Include="MyLab.Log" Version="3.4.20" />
     <PackageReference Include="MyLab.Log.Dsl" Version="3.5.3" />
-    <PackageReference Include="MyLab.RabbitClient" Version="2.3.9" />
+    <PackageReference Include="MyLab.RabbitClient" Version="2.11.26" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

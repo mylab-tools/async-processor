@@ -12,6 +12,7 @@ using MyLab.ApiClient.Test;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.AsyncProcessor.Sdk.Processor;
+using MyLab.Log.XUnit;
 using MyLab.RabbitClient;
 using MyLab.RabbitClient.Consuming;
 using MyLab.RabbitClient.Model;
