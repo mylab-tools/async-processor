@@ -56,7 +56,7 @@ namespace MyLab.AsyncProcessor.Sdk.Processor
                 Reporter = _reporter
             };
 
-            using var scope = _logger.BeginScope(new FactLogScope("req-id", message.BasicProperties.MessageId));
+            using var scope = _logger.BeginScope(new LabelLogScope("req-id", message.BasicProperties.MessageId));
             {
                 var dslLog = _logger.Dsl();
 
