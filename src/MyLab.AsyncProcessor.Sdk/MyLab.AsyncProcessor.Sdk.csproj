@@ -26,11 +26,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MyLab.ApiClient" Version="3.13.24" />
-    <PackageReference Include="MyLab.Log" Version="3.4.20" />
-    <PackageReference Include="MyLab.Log.Dsl" Version="3.5.3" />
-    <PackageReference Include="MyLab.RabbitClient" Version="2.11.26" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="MyLab.ApiClient" Version="3.16.27" />
+    <PackageReference Include="MyLab.Log" Version="3.5.24" />
+    <PackageReference Include="MyLab.Log.Dsl" Version="3.5.4" />
+    <PackageReference Include="MyLab.RabbitClient" Version="2.11.28" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
   <ItemGroup>
