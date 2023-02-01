@@ -12,6 +12,7 @@ using MyLab.ApiClient.Test;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.AsyncProcessor.Sdk.Processor;
+using MyLab.Log.XUnit;
 using MyLab.RabbitClient;
 using MyLab.RabbitClient.Consuming;
 using MyLab.RabbitClient.Model;
@@ -170,7 +171,6 @@ namespace IntegrationTests
                 });
 
                 srv.AddApiClients(reg => { reg.RegisterContract<IAsyncProcessorRequestsApiV2>(); },
-                    o => {},
                     new SingleHttpClientFactory(asyncProcApiClient));
 
                 srv.AddLogging(l => l.AddXUnit(_output));

@@ -484,7 +484,6 @@ namespace IntegrationTests
                 //Act
 
                 var reqId = await SendRequest(requestContent, api.AsyncProcApi);
-
                 RequestStatus status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
 
                 //Assert

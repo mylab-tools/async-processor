@@ -82,8 +82,9 @@ namespace MyLab.AsyncProcessor.Api.Services
             _mqPublisher.IntoExchange(
                     _options.QueueExchange, 
                     createRequest.ProcRouting ?? _options.QueueRoutingKey)
-                .SendJson(msgPayload)
+                .SetJsonContent(msgPayload)
                 .AndProperty(p => p.Expiration = ((long)_options.ProcessingTimeout.TotalMilliseconds).ToString())
+                .AndProperty(p => p.MessageId = id)
                 .Publish();
 
             if(createRequest.CallbackRouting != null)

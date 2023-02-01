@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 using IntegrationTest.Share;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using MyLab.ApiClient;
 using MyLab.ApiClient.Test;
 using MyLab.AsyncProcessor.Sdk;
 using MyLab.AsyncProcessor.Sdk.DataModel;
 using MyLab.AsyncProcessor.Sdk.Processor;
+using MyLab.Log;
+using MyLab.Log.XUnit;
 using MyLab.RabbitClient;
 using MyLab.RabbitClient.Consuming;
 using MyLab.RabbitClient.Model;
@@ -170,10 +173,13 @@ namespace IntegrationTests
                 });
 
                 srv.AddApiClients(reg => { reg.RegisterContract<IAsyncProcessorRequestsApiV1>(); },
-                    o => {},
                     new SingleHttpClientFactory(asyncProcApiClient));
 
-                srv.AddLogging(l => l.AddXUnit(_output));
+                srv.AddLogging(l => l
+                    .AddFilter(lvl => true)
+                    .AddMyLabConsole()
+                    .AddXUnit(_output)
+                );
 
                 srv.AddSingleton<IWebCallReporterFactory>(new WebCallReporterFactory(_output));
 
@@ -229,7 +235,13 @@ namespace IntegrationTests
                     opt.Callback = callbackExchangeName;
                 });
 
-                srv.AddLogging(l => l.AddXUnit(_output));
+                srv.AddLogging(l => l
+                    .AddFilter(lvl => true)
+                    .AddMyLabConsole()
+                    .AddXUnit(_output)
+                );
+                //.Configure<ConsoleFormatterOptions>(opt => opt.IncludeScopes = true);
+
             });
 
             tc.Output = _output;
