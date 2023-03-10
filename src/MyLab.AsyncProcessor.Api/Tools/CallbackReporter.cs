@@ -51,6 +51,19 @@ namespace MyLab.AsyncProcessor.Api.Tools
                 msg);
         }
 
+        public void SendCompleted(string requestId, string callbackRouting)
+        {
+            var msg = new ChangeStatusCallbackMessage
+            {
+                RequestId = requestId,
+                NewProcessStep = ProcessStep.Completed
+            };
+
+            SendCallbackMessage(
+                callbackRouting,
+                msg);
+        }
+
         public void SendCompletedWithError(string requestId, string callbackRouting, ProcessingError procError)
         {
             SendCallbackMessage(
