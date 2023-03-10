@@ -190,6 +190,17 @@ namespace MyLab.AsyncProcessor.Api.Services
             _callbackReporter?.SendCompletedWithResult(id, callbackRouting, content, mimeType);
         }
 
+        public async Task CompleteAsync(string id)
+        {
+            var statusKey = await GetStatusKeyAsync(id);
+            await RequestStatusTools.SetSuccessfulCompleted(statusKey);
+
+            await UpdateStoreExpiration(id);
+
+            var callbackRouting = await GetCallbackRoutingAsync(id);
+            _callbackReporter?.SendCompleted(id, callbackRouting);
+        }
+
         string CreateKeyName(string id, string suffix) => _options.RedisKeyPrefix.TrimEnd(':') + ':' + id + ":" + suffix;
 
         string ContentToString(byte[] content, string mimeType)

@@ -373,6 +373,47 @@ namespace IntegrationTests
         }
 
         [Fact]
+        public async Task ShouldProcessMessageWithoutResult()
+        {
+            //Arrange
+            var callback = CreateCallback();
+            try
+            {
+                var api = Prepare(callback.exchange.Name);
+
+                var requestContent = new TestRequest
+                {
+                    Value1 = "foo",
+                    Command = "simple-complete"
+                };
+                
+                //Act
+
+                var reqId = await SendRequest(requestContent, api.AsyncProcApi);
+                var status = await ProcessRequestAsync(reqId, api.AsyncProcApi);
+                var result = await GetResult(api, rApi => rApi.GetBinResult(reqId));
+
+                //Assert
+                Assert.Equal(ProcessStep.Completed, status.Step);
+                Assert.True(status.Successful);
+
+                await AssertCallback(callback.incomingMq, new Action<ChangeStatusCallbackMessage>[]
+                {
+                    m => Assert.Equal(ProcessStep.Processing, m.NewProcessStep),
+                    m =>
+                    {
+                        Assert.Equal(ProcessStep.Completed, m.NewProcessStep);
+                    }
+                });
+            }
+            finally
+            {
+                callback.exchange.Remove();
+                callback.incomingMq.Remove();
+            }
+        }
+
+        [Fact]
         public async Task ShouldProvideProcessingError()
         {
             //Arrange

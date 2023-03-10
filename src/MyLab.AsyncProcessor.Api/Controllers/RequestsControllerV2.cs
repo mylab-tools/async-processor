@@ -86,7 +86,7 @@ namespace MyLab.AsyncProcessor.Api.Controllers
         [HttpPost("{id}/status/step/completed")]
         public async Task<IActionResult> MakeRequestCompeted([FromRoute] string id)
         {
-            await _logic.SetRequestStepAsync(id, ProcessStep.Completed);
+            await _logic.CompleteAsync(id);
 
             return Ok();
         }

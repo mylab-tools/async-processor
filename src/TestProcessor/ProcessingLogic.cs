@@ -32,6 +32,8 @@ namespace TestProcessor
                     return op.CompleteWithResultAsync(string.Join(',', Enumerable.Repeat(request.Content.Value1, request.Content.Value2)));
                 case "return-incoming-dt":
                     return op.CompleteWithResultAsync(request.IncomingDt);
+                case "simple-complete":
+                    return op.CompleteAsync();
                 default: throw new IndexOutOfRangeException();
             }
         }

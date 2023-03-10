@@ -96,6 +96,17 @@ namespace MyLab.AsyncProcessor.Api.Tools
             await hash.SetAsync(props);
         }
 
+        public static async Task SetSuccessfulCompleted(HashRedisKey hash)
+        {
+            var props = new[]
+            {
+                new HashEntry("processStep", ProcessStep.Completed.ToString()),
+                new HashEntry("successful", true.ToString())
+            };
+
+            await hash.SetAsync(props);
+        }
+
         public static async Task SaveBizStep(string bizStep, HashRedisKey hash)
         {
             var props = new[]
